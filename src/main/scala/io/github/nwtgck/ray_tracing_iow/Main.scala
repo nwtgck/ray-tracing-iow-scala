@@ -20,7 +20,7 @@ object Main {
 
   def color(r: Ray, hitable: Hitable, depth: Int): Color3 = {
 
-    hitable.hit(r, 0f, Float.MaxValue) match {
+    hitable.hit(r, 0.001f, Float.MaxValue) match {
       case Some(hitRecord) =>
         if(depth < 50){
           hitRecord.material.scatter(r, hitRecord) match {
