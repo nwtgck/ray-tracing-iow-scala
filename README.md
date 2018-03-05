@@ -10,6 +10,15 @@
 ./run_jar.sh > out.ppm
 ```
 
+or
+
+```bash
+sbt "runMain io.github.nwtgck.ray_tracing_iow.Main out.ppm"
+```
+
+Then you will get `out.ppm` image
+
+
 (Why not `sbt run`? Because it contains `[info] ...` logs. They aren't useless to use `>` redirect.)
 
 ## References
