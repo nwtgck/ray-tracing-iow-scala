@@ -24,7 +24,7 @@ object Main {
       case Some(hitRecord) =>
         val target: Vec3 = hitRecord.p + hitRecord.normal + randomInUnitSphare()
         color(Ray(hitRecord.p, target-hitRecord.p), hitable) * 0.5f
-        
+
       case None => {
         val unitDirection: Vec3  = r.direction.unitVector
         val t            : Float = 0.5f * (unitDirection.y + 1.0f)
@@ -69,6 +69,7 @@ object Main {
         col = col + color(r, hitable)
       }
       col = col / ns.toFloat
+      col = Color3(Math.sqrt(col.r).toFloat, Math.sqrt(col.g).toFloat, Math.sqrt(col.b).toFloat)
       out.println(s"${col.ir} ${col.ig} ${col.ib}")
     }
 
