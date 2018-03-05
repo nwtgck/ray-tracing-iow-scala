@@ -6,19 +6,26 @@ import scala.util.Try
 
 object Main {
 
-  def hitsSphere(center: Vec3, radius: Float, r: Ray): Boolean = {
+  def hitSphere(center: Vec3, radius: Float, r: Ray): Float = {
     val oc: Vec3 = r.origin - center
     val a: Float = r.direction.dot(r.direction)
     val b: Float = 2.0f * oc.dot(r.direction)
     val c: Float = oc.dot(oc) - radius*radius
     val discriminant: Float = b * b - 4 * a * c
 
-    discriminant >= 0
+    if(discriminant < 0){
+      -1.0f
+    } else {
+      (-b - Math.sqrt(discriminant).toFloat) / (2.0f * a)
+    }
   }
 
   def color(r: Ray): Color3 = {
-    if(hitsSphere(Vec3(0f, 0f, -1f), radius = 0.5f, r)){
-      Color3(1f, 0f, 0f)
+    val t: Float = hitSphere(Vec3(0f, 0f, -1f), radius = 0.5f, r)
+
+    if(t > 0.0f){
+      val N: Vec3 = (r.pointAtParameter(t) - Vec3(0f, 0f, -1f)).unitVector
+      Color3(N.x+1f, N.y+1f, N.z+1f) * 0.5f
     } else {
       val unitDirection: Vec3  = r.direction.unitVector
       val t            : Float = 0.5f * (unitDirection.y + 1.0f)
