@@ -20,15 +20,13 @@ object Main {
       j <- ny - 1 to 0 by -1
       i <- 0 until nx
     } {
-      val r: Float = i.toFloat / nx
-      val g: Float = j.toFloat / ny
-      val b: Float = 0.2f
-      def colorElemToInt(colorElem: Float): Int = (255.99 * colorElem).toInt
-      val ir: Int = colorElemToInt(r)
-      val ig: Int = colorElemToInt(g)
-      val ib: Int = colorElemToInt(b)
 
-      out.println(s"${ir} ${ig} ${ib}")
+      val col: Color3 = Color3(
+        r = i.toFloat / nx,
+        g = j.toFloat / ny,
+        b = 0.2f
+      )
+      out.println(s"${col.ir} ${col.ig} ${col.ib}")
     }
 
     out.close()
