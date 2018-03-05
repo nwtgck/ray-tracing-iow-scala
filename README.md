@@ -5,8 +5,8 @@
 ## Run
 
 ```bash
-sbt assembly
-java -jar ./target/scala-2.12/ray-tracing-iow.jar
+./make_jar.sh
+./run_jar.sh > out.ppm
 ```
 
 (Why not `sbt run`? Because it contains `[info] ...` logs. They aren't useless to use `>` redirect.)
