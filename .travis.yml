@@ -1,0 +1,7 @@
+language: scala
+scala:
+   - 2.12.4
+
+script:
+  # NOTE: This is just a working-test
+  - sbt ++$TRAVIS_SCALA_VERSION run
