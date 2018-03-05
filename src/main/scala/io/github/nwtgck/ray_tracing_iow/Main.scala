@@ -6,16 +6,25 @@ import scala.util.{Random, Try}
 
 object Main {
 
+  val rand: Random = new Random(seed=101)
+
+
+  def randomInUnitSphare(): Vec3 = {
+    // TODO: Make it declarative
+    var p: Vec3 = Vec3(0f, 0f, 0f)
+    do {
+      p = Vec3(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()) * 2.0f - Vec3(1f, 1f, 1f)
+    } while(p.squaredLength >= 1.0f)
+    p
+  }
+
   def color(r: Ray, hitable: Hitable): Color3 = {
 
-
     hitable.hit(r, 0.0f, Float.MaxValue) match {
-      case Some(hitRecord) => Color3(
-        hitRecord.normal.x+1f,
-        hitRecord.normal.y+1f,
-        hitRecord.normal.z+1f
-      ) * 0.5f
-
+      case Some(hitRecord) =>
+        val target: Vec3 = hitRecord.p + hitRecord.normal + randomInUnitSphare()
+        color(Ray(hitRecord.p, target-hitRecord.p), hitable) * 0.5f
+        
       case None => {
         val unitDirection: Vec3  = r.direction.unitVector
         val t            : Float = 0.5f * (unitDirection.y + 1.0f)
@@ -34,8 +43,6 @@ object Main {
     val nx: Int = 200
     val ny: Int = 100
     val ns: Int = 100
-
-    val rand: Random = new Random(seed=101)
 
     out.println(
       s"""P3
