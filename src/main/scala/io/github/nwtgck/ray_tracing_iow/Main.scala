@@ -20,7 +20,7 @@ object Main {
 
   def color(r: Ray, hitable: Hitable): Color3 = {
 
-    hitable.hit(r, 0.0f, Float.MaxValue) match {
+    hitable.hit(r, 0.0000001f, Float.MaxValue) match {
       case Some(hitRecord) =>
         val target: Vec3 = hitRecord.p + hitRecord.normal + randomInUnitSphare()
         color(Ray(hitRecord.p, target-hitRecord.p), hitable) * 0.5f
