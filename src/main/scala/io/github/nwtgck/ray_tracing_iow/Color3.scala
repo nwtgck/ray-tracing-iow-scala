@@ -6,7 +6,8 @@ case class Color3(r: Float, g: Float, b: Float){
   @inline def +(that: Color3): Color3 = Color3(r+that.r, g+that.g, b+that.b)
   // Scaling (*)
   @inline def *(t: Float): Color3 = Color3(r*t, g*t, b*t)
-
+  // Scaling (/)
+  @inline def /(t: Float): Color3 = Color3(r/t, g/t, b/ t)
 
   @inline private def colorElemToInt(colorElem: Float): Int = (255.99 * colorElem).toInt
   val ir: Int = colorElemToInt(r)

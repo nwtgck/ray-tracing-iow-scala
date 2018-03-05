@@ -2,7 +2,7 @@ package io.github.nwtgck.ray_tracing_iow
 
 import java.io.{FileOutputStream, PrintStream}
 
-import scala.util.Try
+import scala.util.{Random, Try}
 
 object Main {
 
@@ -33,31 +33,35 @@ object Main {
 
     val nx: Int = 200
     val ny: Int = 100
+    val ns: Int = 100
+
+    val rand: Random = new Random(seed=101)
 
     out.println(
       s"""P3
          |${nx} ${ny}
          |255""".stripMargin)
 
-    val lowerLeftCorner: Vec3 = Vec3(-2.0f, -1.0f, -1.0f)
-    val horizontal     : Vec3 = Vec3(4.0f, 0.0f, 0.0f)
-    val vertical       : Vec3 = Vec3(0.0f, 2.0f, 0.0f)
-    val origin         : Vec3 = Vec3(0.0f, 0.0f, 0.0f)
     val hitable        : ListHitable = ListHitable(
       SphereHitable(center = Vec3(0f, 0f, -1f), radius = 0.5f),
       SphereHitable(center = Vec3(0f, -100.5f, -1f), radius = 100f)
     )
 
+    val camera: Camera = new Camera()
+
     for{
       j <- ny - 1 to 0 by -1
       i <- 0 until nx
     } {
-
-      val u: Float = i.toFloat / nx
-      val v: Float = j.toFloat / ny
-      val r: Ray   = Ray(origin, lowerLeftCorner + horizontal * u + vertical * v)
-
-      val col: Color3 = color(r=r, hitable=hitable)
+      // TODO: Make it declarative
+      var col: Color3 = Color3(0f, 0f, 0f)
+      for(s <- 0 until ns){
+        val u: Float = (i + rand.nextFloat()) / nx
+        val v: Float = (j + rand.nextFloat()) / ny
+        val r: Ray   = camera.getRay(u, v)
+        col = col + color(r, hitable)
+      }
+      col = col / ns.toFloat
       out.println(s"${col.ir} ${col.ig} ${col.ib}")
     }
 
