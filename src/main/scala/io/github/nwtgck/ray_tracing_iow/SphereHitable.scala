@@ -1,6 +1,6 @@
 package io.github.nwtgck.ray_tracing_iow
 
-case class SphereHitable(center: Vec3, radius: Float) extends Hitable {
+case class SphereHitable(center: Vec3, radius: Float, material: Material) extends Hitable {
   override def hit(r: Ray, tMin: Float, tMax: Float): Option[HitRecord] = {
     val oc: Vec3 = r.origin - center
     val a: Float = r.direction.dot(r.direction)
@@ -17,9 +17,10 @@ case class SphereHitable(center: Vec3, radius: Float) extends Hitable {
       val p      = r.pointAtParameter(t)
       val normal = (p - center) / radius
       Some(HitRecord(
-        t      = t,
-        p      = p,
-        normal = normal
+        t        = t,
+        p        = p,
+        normal   = normal,
+        material = material
       ))
     } else {
       None

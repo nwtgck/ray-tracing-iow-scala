@@ -1,6 +1,6 @@
 package io.github.nwtgck.ray_tracing_iow
 
-case class HitRecord(t: Float, p: Vec3, normal: Vec3)
+case class HitRecord(t: Float, p: Vec3, normal: Vec3, material: Material)
 
 abstract class Hitable {
   /**

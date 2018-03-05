@@ -18,12 +18,21 @@ object Main {
     p
   }
 
-  def color(r: Ray, hitable: Hitable): Color3 = {
+  def color(r: Ray, hitable: Hitable, depth: Int): Color3 = {
 
-    hitable.hit(r, 0.0000001f, Float.MaxValue) match {
+    hitable.hit(r, 0f, Float.MaxValue) match {
       case Some(hitRecord) =>
-        val target: Vec3 = hitRecord.p + hitRecord.normal + randomInUnitSphare()
-        color(Ray(hitRecord.p, target-hitRecord.p), hitable) * 0.5f
+        if(depth < 50){
+          hitRecord.material.scatter(r, hitRecord) match {
+            case Some(ScatterRecord(attenuation, scattered)) =>
+              val col = color(scattered, hitable, depth+1)
+              Color3(col.r * attenuation.x, col.g * attenuation.y, col.b * attenuation.z)
+            case None =>
+              Color3(0f, 0f, 0f)
+          }
+        } else {
+          Color3(0f, 0f, 0f)
+        }
 
       case None => {
         val unitDirection: Vec3  = r.direction.unitVector
@@ -50,8 +59,26 @@ object Main {
          |255""".stripMargin)
 
     val hitable        : ListHitable = ListHitable(
-      SphereHitable(center = Vec3(0f, 0f, -1f), radius = 0.5f),
-      SphereHitable(center = Vec3(0f, -100.5f, -1f), radius = 100f)
+      SphereHitable(
+        center   = Vec3(0f, 0f, -1f),
+        radius   = 0.5f,
+        material = LambertMaterial(albedo = Vec3(0.8f, 0.3f, 0.3f))
+      ),
+      SphereHitable(
+        center   = Vec3(0f, -100.5f, -1f),
+        radius   = 100f,
+        material = LambertMaterial(albedo = Vec3(0.8f, 0.8f, 0.0f))
+      ),
+      SphereHitable(
+        center   = Vec3(1f, 0f, -1f),
+        radius   = 0.5f,
+        material = MetalMaterial(albedo = Vec3(0.8f, 0.6f, 0.2f))
+      ),
+      SphereHitable(
+        center   = Vec3(-1f, 0f, -1f),
+        radius   = 0.5f,
+        material = MetalMaterial(albedo = Vec3(0.8f, 0.8f, 0.8f))
+      )
     )
 
     val camera: Camera = new Camera()
@@ -66,7 +93,7 @@ object Main {
         val u: Float = (i + rand.nextFloat()) / nx
         val v: Float = (j + rand.nextFloat()) / ny
         val r: Ray   = camera.getRay(u, v)
-        col = col + color(r, hitable)
+        col = col + color(r, hitable, 0)
       }
       col = col / ns.toFloat
       col = Color3(Math.sqrt(col.r).toFloat, Math.sqrt(col.g).toFloat, Math.sqrt(col.b).toFloat)
