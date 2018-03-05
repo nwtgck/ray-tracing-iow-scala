@@ -18,15 +18,19 @@ case class LambertMaterial(albedo: Vec3) extends Material{
   }
 }
 
-case class MetalMaterial(albedo: Vec3) extends Material{
+case class MetalMaterial(albedo: Vec3, f: Float) extends Material{
+
+  val fuzz: Float = if(f < 1) f else 1
 
   // NOTE: May extract this method
   def reflect(v: Vec3, n: Vec3): Vec3 =  v - n * 2f * v.dot(n)
 
   override def scatter(rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord] = {
+
     val reflected: Vec3 = reflect(rIn.direction.unitVector, hitRecord.normal)
 
-    val scattered: Ray = Ray(hitRecord.p, reflected)
+    // TODO: Not to use `Main.randomInUnitSphare()`, Should move `Main.randomInUnitSphare()` to object `Utils` or etc.
+    val scattered: Ray = Ray(hitRecord.p, reflected + Main.randomInUnitSphare() * fuzz)
 
     if(scattered.direction.dot(hitRecord.normal) > 0){
       Some(ScatterRecord(
