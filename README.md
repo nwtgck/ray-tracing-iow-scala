@@ -1,7 +1,7 @@
 # ray-tracing-iow
 [![Build Status](https://travis-ci.com/nwtgck/ray-tracing-iow-scala.svg?token=TuxNpqznwwyy7hyJwBVm&branch=master)](https://travis-ci.com/nwtgck/ray-tracing-iow-scala)
 
-[Ray Tracing in One Weekend](http://in1weekend.blogspot.jp/2016/01/ray-tracing-in-one-weekend.html) written in Scala
+[Ray Tracing in One Weekend](http://in1weekend.blogspot.jp/2016/01/ray-tracing-in-one-weekend.html) Written in Scala
 
 
 <img src='image_logs/pngs/chapter12.png' width='500duy '>
@@ -31,7 +31,20 @@ sbt "runMain io.github.nwtgck.ray_tracing_iow.Main --out-file=out.ppm"
 Then you will get `out.ppm` image
 
 
-(Why not `sbt run`? Because it contains `[info] ...` logs. They aren't useless to use `>` redirect.)
+### Options
+
+You can specify parameters by the options.
+
+```txt
+Usage: Ray Tracing in One Weekend Written in Scala [options]
+
+  --width <value>          width (default: 600)
+  --height <value>         height (default: 400)
+  --ns <value>             ns (default: 10})
+  --out-extension <value>  extension of output file (default: ppm)
+  --out-file <value>       path of output file (default: stdout)
+```
+
 
 ## Change History
 
