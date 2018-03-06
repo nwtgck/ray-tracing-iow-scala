@@ -4,6 +4,8 @@ import java.io.{FileOutputStream, PrintStream}
 
 import scala.util.{Random, Try}
 
+case class RayTracingIOWOptions(width: Int, height: Int, ns: Int, outfilePathOpt: Option[String])
+
 object Main {
 
   val rand: Random = new Random(seed=101)
@@ -128,53 +130,85 @@ object Main {
 
   def main(args: Array[String]): Unit = {
 
-    // output
-    val out: PrintStream =
-      Try(new PrintStream(new FileOutputStream(args(0))))
-      .getOrElse(System.out)
+    val defaultOpts: RayTracingIOWOptions =
+      RayTracingIOWOptions(
+        width          = 400,
+        height         = 600,
+        ns             = 10,
+        outfilePathOpt = None
+      )
 
-    val nx: Int = 1200
-    val ny: Int = 800
-    val ns: Int = 10
+    val parser = new scopt.OptionParser[RayTracingIOWOptions]("Ray Tracing in One Weekend Written in Scala") {
+      opt[Int]("width") action { (v, opts) =>
+        opts.copy(width = v)
+      } text s"width (default: ${defaultOpts.width})"
 
-    out.println(
-      s"""P3
-         |${nx} ${ny}
-         |255""".stripMargin)
+      opt[Int]("height") action { (v, opts) =>
+        opts.copy(height = v)
+      } text s"height (default: ${defaultOpts.height})"
 
-    val hitable        : Hitable = randomScene()
+      opt[Int]("ns") action { (v, opts) =>
+        opts.copy(ns = v)
+      } text s"ns (default: ${defaultOpts.ns}})" // TODO Rename
 
-    val lookfrom: Vec3 = Vec3(13f, 2f, 3f)
-    val lookat  : Vec3 = Vec3(0f, 0f, 0f)
-    val focusDist: Float = 10.0f
-    val aperture   : Float = 0.1f
-    val camera: Camera = Camera(
-      lookfrom  = lookfrom,
-      lookat    = lookat,
-      vup       = Vec3(0f, 1f, 0f),
-      vfov      = 20f,
-      aspect    = nx.toFloat / ny,
-      aperture  = aperture,
-      focusDist = focusDist
-    )
-
-    for{
-      j <- ny - 1 to 0 by -1
-      i <- 0 until nx
-    } {
-      // TODO: Make it declarative
-      var col: Color3 = Color3(0f, 0f, 0f)
-      for(s <- 0 until ns){
-        val u: Float = (i + rand.nextFloat()) / nx
-        val v: Float = (j + rand.nextFloat()) / ny
-        val r: Ray   = camera.getRay(rand, u, v)
-        col = col + color(r, hitable, 0)
-      }
-      col = col / ns.toFloat
-      col = Color3(Math.sqrt(col.r).toFloat, Math.sqrt(col.g).toFloat, Math.sqrt(col.b).toFloat)
-      out.println(s"${col.ir} ${col.ig} ${col.ib}")
+      opt[String]("out-file") action { (v, opts) =>
+        opts.copy(outfilePathOpt = Some(v))
+      } text "path of output file (default: stdout)"
     }
 
-    out.close()
+    parser.parse(args, defaultOpts) match {
+      case Some(options) =>
+        // output
+        val out: PrintStream =
+          options.outfilePathOpt.map{path => new PrintStream(new FileOutputStream(path))}
+            .getOrElse(System.out)
+
+        val nx: Int = options.height
+        val ny: Int = options.width
+        val ns: Int = options.ns
+
+        out.println(
+          s"""P3
+             |${nx} ${ny}
+             |255""".stripMargin)
+
+        val hitable        : Hitable = randomScene()
+
+        val lookfrom: Vec3 = Vec3(13f, 2f, 3f)
+        val lookat  : Vec3 = Vec3(0f, 0f, 0f)
+        val focusDist: Float = 10.0f
+        val aperture   : Float = 0.1f
+        val camera: Camera = Camera(
+          lookfrom  = lookfrom,
+          lookat    = lookat,
+          vup       = Vec3(0f, 1f, 0f),
+          vfov      = 20f,
+          aspect    = nx.toFloat / ny,
+          aperture  = aperture,
+          focusDist = focusDist
+        )
+
+        for{
+          j <- ny - 1 to 0 by -1
+          i <- 0 until nx
+        } {
+          // TODO: Make it declarative
+          var col: Color3 = Color3(0f, 0f, 0f)
+          for(s <- 0 until ns){
+            val u: Float = (i + rand.nextFloat()) / nx
+            val v: Float = (j + rand.nextFloat()) / ny
+            val r: Ray   = camera.getRay(rand, u, v)
+            col = col + color(r, hitable, 0)
+          }
+          col = col / ns.toFloat
+          col = Color3(Math.sqrt(col.r).toFloat, Math.sqrt(col.g).toFloat, Math.sqrt(col.b).toFloat)
+          out.println(s"${col.ir} ${col.ig} ${col.ib}")
+        }
+
+        out.close()
+
+      case None =>
+        ()
+    }
   }
 }

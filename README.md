@@ -4,7 +4,7 @@
 [Ray Tracing in One Weekend](http://in1weekend.blogspot.jp/2016/01/ray-tracing-in-one-weekend.html) written in Scala
 
 
-<img src='image_logs/pngs/chapter12.png' width='500'>
+<img src='image_logs/pngs/chapter12.png' width='500duy '>
 
 ## Run
 
@@ -16,7 +16,14 @@
 or
 
 ```bash
-sbt "runMain io.github.nwtgck.ray_tracing_iow.Main out.ppm"
+./make_jar.sh
+./run_jar.sh --out-file=out.ppm
+```
+
+or
+
+```bash
+sbt "runMain io.github.nwtgck.ray_tracing_iow.Main --out-file=out.ppm"
 ```
 
 Then you will get `out.ppm` image
