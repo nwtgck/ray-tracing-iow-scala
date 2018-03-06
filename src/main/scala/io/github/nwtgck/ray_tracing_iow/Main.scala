@@ -86,12 +86,18 @@ object Main {
       )
     )
 
+    val lookfrom: Vec3 = Vec3(3f, 3f, 2f)
+    val lookat  : Vec3 = Vec3(0f, 0f, -1f)
+    val focusDist: Float = (lookfrom - lookat).length
+    val aperture   : Float = 2.0f
     val camera: Camera = Camera(
-      lookfrom = Vec3(0f, 0f, 0.05f),
-      lookat   = Vec3(0f, 0f, 0f),
-      vup      = Vec3(0f, 1f, 0f),
-      vfov     = 90f,
-      aspect   = nx.toFloat / ny
+      lookfrom  = lookfrom,
+      lookat    = lookat,
+      vup       = Vec3(0f, 1f, 0f),
+      vfov      = 20f,
+      aspect    = nx.toFloat / ny,
+      aperture  = aperture,
+      focusDist = focusDist
     )
 
     for{
@@ -103,7 +109,7 @@ object Main {
       for(s <- 0 until ns){
         val u: Float = (i + rand.nextFloat()) / nx
         val v: Float = (j + rand.nextFloat()) / ny
-        val r: Ray   = camera.getRay(u, v)
+        val r: Ray   = camera.getRay(rand, u, v)
         col = col + color(r, hitable, 0)
       }
       col = col / ns.toFloat
