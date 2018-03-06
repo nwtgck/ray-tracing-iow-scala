@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage
 import java.io.{FileOutputStream, OutputStream, PrintStream}
 import javax.imageio.ImageIO
 
+import scala.collection.parallel.immutable.ParSeq
 import scala.util.Random
 
 case class RayTracingIOWOptions(width: Int,
@@ -19,8 +20,6 @@ case object JPGImgExtension extends ImgExtension("jpg")
 case object GifImgExtension extends ImgExtension("gif")
 
 object Main {
-
-//  val rand: Random = new Random(seed=101)
 
   def randomInUnitSphare(rand: Random): Vec3 = {
     // TODO: Make it declarative
@@ -161,11 +160,20 @@ object Main {
       focusDist = focusDist
     )
 
-    val colorAndPoss: Stream[(Color3, (Int, Int))] = for{
+    // Pairs of Position and Seed
+    val posAndSeeds: Stream[((Int, Int), Int)] = for{
       j <- (height - 1 to 0 by -1).toStream
       i <- (0 until width).toStream
+      seed = rand.nextInt()
+    } yield ((i, j), seed)
+
+    val colorAndPosPar: ParSeq[(Color3, (Int, Int))] = for{
+      ((i, j), seed) <- posAndSeeds.par
     } yield {
       // TODO: Make it declarative
+
+      val rand: Random = new Random(seed = seed)
+
       var col: Color3 = Color3(0f, 0f, 0f)
       for(s <- 0 until ns){
         val u: Float = (i + rand.nextFloat()) / width
@@ -186,12 +194,12 @@ object Main {
              |${width} ${height}
              |255""".stripMargin)
 
-        for((col, _) <- colorAndPoss){
+        for((col, pos) <- colorAndPosPar.toStream){ // NOTE: toStream is necessary to be sure that colors are ordered
           out.println(s"${col.ir} ${col.ig} ${col.ib}")
         }
       case _ =>
         val image: BufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-        for((col, (x, y)) <- colorAndPoss){
+        for((col, (x, y)) <- colorAndPosPar){
           image.setRGB(x, height -1 - y, col.rgbInt)
         }
         ImageIO.write(image, imgExt.name, outputStream)
