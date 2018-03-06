@@ -8,7 +8,7 @@ object CameraUtils{
     // NOTE: Safe null because it will be assigned in do-while
     var p: Vec3 = null
     do {
-      p = Vec3(rand.nextFloat(), rand.nextFloat(), 0f) - Vec3(1f, 1f, 0f)
+      p = Vec3(rand.nextFloat(), rand.nextFloat(), 0f) * 2.0f - Vec3(1f, 1f, 0f)
     } while(p.dot(p) >= 1.0f)
     p
   }
@@ -18,7 +18,7 @@ case class Camera(lookfrom: Vec3, lookat: Vec3, vup: Vec3, vfov: Float, aspect: 
 
   // NOTE: Should hide some fields
 
-  val lensRadius: Float = aspect / 2f
+  val lensRadius: Float = aperture / 2f
   val theta     : Float = vfov * Math.PI.toFloat / 180f
   val halfHeight: Float = Math.tan(theta / 2f).toFloat
   val halfWidth : Float = aspect * halfHeight

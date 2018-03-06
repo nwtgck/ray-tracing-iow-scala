@@ -42,6 +42,90 @@ object Main {
     }
   }
 
+  def randomScene(): Hitable = {
+
+    // TODO: Make it declarative
+
+    var hittables: List[Hitable] = Nil
+
+    hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
+      center   = Vec3(0f, -1000f, 0f),
+      radius   = 1000f,
+      material = LambertMaterial(albedo = Vec3(0.5f, 0.5f, 0.5f))
+    )
+    for{
+      a <- -11 until 11
+      b <- -11 until 11
+    }{
+      val chooseMat: Float = rand.nextFloat()
+      val center   : Vec3  = Vec3(
+        a + 0.9f * rand.nextFloat(),
+        0.2f,
+        b + 0.9f * rand.nextFloat()
+      )
+      if((center - Vec3(4f, 0.2f, 0f)).length > 0.9f){
+        if(chooseMat < 0.8f){ // diffuse
+          hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
+            center   = center,
+            radius   =  0.2f,
+            material = LambertMaterial(
+              albedo = Vec3(
+                rand.nextFloat() * rand.nextFloat(),
+                rand.nextFloat() * rand.nextFloat(),
+                rand.nextFloat() * rand.nextFloat()
+              )
+            )
+          )
+        } else if (chooseMat < 0.95f){ // metal
+          hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
+            center   = center,
+            radius   = 0.2f,
+            material = MetalMaterial(
+              albedo = Vec3(
+                0.5f * (1 + rand.nextFloat()),
+                0.5f * (1 + rand.nextFloat()),
+                0.5f * (1 + rand.nextFloat())
+              ),
+              f      = 0.5f * rand.nextFloat()
+            )
+          )
+        } else {
+          hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
+            center   = center,
+            radius   = 0.2f,
+            material = DielectricMaterial(refIdx = 1.5f, rand)
+          )
+        }
+      }
+    }
+
+    hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
+      center   = Vec3(0f, 1f, 0f),
+      radius   = 1.0f,
+      material = DielectricMaterial(
+        refIdx = 1.5f,
+        rand
+      )
+    )
+    hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
+      center   = Vec3(-4f, 1f, 0f),
+      radius   =  1.0f,
+      material = LambertMaterial(
+        albedo = Vec3(0.4f, 0.2f, 0.1f)
+      )
+    )
+    hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
+      center   = Vec3(4f, 1f, 0f),
+      radius   = 1.0f,
+      material = MetalMaterial(
+        albedo = Vec3(0.7f, 0.6f, 0.5f),
+        f      = 0.0f
+      )
+    )
+
+    ListHitable(hittables: _*)
+  }
+
   def main(args: Array[String]): Unit = {
 
     // output
@@ -49,47 +133,21 @@ object Main {
       Try(new PrintStream(new FileOutputStream(args(0))))
       .getOrElse(System.out)
 
-    val nx: Int = 200
-    val ny: Int = 100
-    val ns: Int = 100
+    val nx: Int = 1200
+    val ny: Int = 800
+    val ns: Int = 10
 
     out.println(
       s"""P3
          |${nx} ${ny}
          |255""".stripMargin)
 
-    val hitable        : ListHitable = ListHitable(
-      SphereHitable(
-        center   = Vec3(0f, 0f, -1f),
-        radius   = 0.5f,
-        material = LambertMaterial(albedo = Vec3(0.1f, 0.2f, 0.5f))
-      ),
-      SphereHitable(
-        center   = Vec3(0f, -100.5f, -1f),
-        radius   = 100f,
-        material = LambertMaterial(albedo = Vec3(0.8f, 0.8f, 0.0f))
-      ),
-      SphereHitable(
-        center   = Vec3(1f, 0f, -1f),
-        radius   = 0.5f,
-        material = MetalMaterial(albedo = Vec3(0.8f, 0.6f, 0.2f), f = 0.2f)
-      ),
-      SphereHitable(
-        center   = Vec3(-1f, 0f, -1f),
-        radius   = 0.5f,
-        material = DielectricMaterial(refIdx = 1.5f, rand = rand)
-      ),
-      SphereHitable(
-        center   = Vec3(-1f, 0f, -1f),
-        radius   = -0.45f,
-        material = DielectricMaterial(refIdx = 1.5f, rand = rand)
-      )
-    )
+    val hitable        : Hitable = randomScene()
 
-    val lookfrom: Vec3 = Vec3(3f, 3f, 2f)
-    val lookat  : Vec3 = Vec3(0f, 0f, -1f)
-    val focusDist: Float = (lookfrom - lookat).length
-    val aperture   : Float = 2.0f
+    val lookfrom: Vec3 = Vec3(13f, 2f, 3f)
+    val lookat  : Vec3 = Vec3(0f, 0f, 0f)
+    val focusDist: Float = 10.0f
+    val aperture   : Float = 0.1f
     val camera: Camera = Camera(
       lookfrom  = lookfrom,
       lookat    = lookat,
