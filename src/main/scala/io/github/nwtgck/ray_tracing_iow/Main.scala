@@ -57,7 +57,7 @@ object Main {
       s"""P3
          |${nx} ${ny}
          |255""".stripMargin)
-    
+
     val hitable        : ListHitable = ListHitable(
       SphereHitable(
         center   = Vec3(0f, 0f, -1f),
@@ -87,8 +87,8 @@ object Main {
     )
 
     val camera: Camera = Camera(
-      lookfrom = Vec3(-2f, 2f, 1f),
-      lookat   = Vec3(0f, 0f, -1f),
+      lookfrom = Vec3(0f, 0f, 0.05f),
+      lookat   = Vec3(0f, 0f, 0f),
       vup      = Vec3(0f, 1f, 0f),
       vfov     = 90f,
       aspect   = nx.toFloat / ny
