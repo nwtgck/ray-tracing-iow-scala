@@ -3,6 +3,9 @@
 
 [Ray Tracing in One Weekend](http://in1weekend.blogspot.jp/2016/01/ray-tracing-in-one-weekend.html) written in Scala
 
+
+<img src='image_logs/pngs/chapter12.png' width='500'>
+
 ## Run
 
 ```bash
