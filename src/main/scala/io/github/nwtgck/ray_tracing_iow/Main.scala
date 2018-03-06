@@ -58,35 +58,21 @@ object Main {
          |${nx} ${ny}
          |255""".stripMargin)
 
+    val R: Float = Math.cos(Math.PI / 4).toFloat
     val hitable        : ListHitable = ListHitable(
       SphereHitable(
-        center   = Vec3(0f, 0f, -1f),
-        radius   = 0.5f,
-        material = LambertMaterial(albedo = Vec3(0.1f, 0.2f, 0.5f))
+        center   = Vec3(-R, 0f, -1f),
+        radius   = R,
+        material = LambertMaterial(albedo = Vec3(0f, 0f, 1f))
       ),
       SphereHitable(
-        center   = Vec3(0f, -100.5f, -1f),
-        radius   = 100f,
-        material = LambertMaterial(albedo = Vec3(0.8f, 0.8f, 0.0f))
-      ),
-      SphereHitable(
-        center   = Vec3(1f, 0f, -1f),
-        radius   = 0.5f,
-        material = MetalMaterial(albedo = Vec3(0.8f, 0.6f, 0.2f), f = 0.2f)
-      ),
-      SphereHitable(
-        center   = Vec3(-1f, 0f, -1f),
-        radius   = 0.5f,
-        material = DielectricMaterial(refIdx = 1.5f, rand = rand)
-      ),
-      SphereHitable(
-        center   = Vec3(-1f, 0f, -1f),
-        radius   = -0.45f,
-        material = DielectricMaterial(refIdx = 1.5f, rand = rand)
+        center   = Vec3(R, 0f, -1f),
+        radius   = R,
+        material = LambertMaterial(albedo = Vec3(1f, 0f, 0f))
       )
     )
 
-    val camera: Camera = new Camera()
+    val camera: Camera = new Camera(vfov = 90f, aspect = nx.toFloat / ny)
 
     for{
       j <- ny - 1 to 0 by -1
