@@ -8,8 +8,8 @@ refs           = [init_commit_id, *tags]
 
 
 
-puts("|Tag|Files at that point|Diff")
-puts("|---|---|---|")
+puts("|Tag|Files at that point|Diff|Generated image|")
+puts("|---|---|---|---|")
 refs.each_cons(2){|pref_ref, curr_ref|
-   puts  "|`#{curr_ref}`| [files](https://github.com/nwtgck/ray-tracing-iow-scala/tree/#{curr_ref}) | [diff](https://github.com/nwtgck/ray-tracing-iow-scala/compare/#{pref_ref}...#{curr_ref})|"
+   puts  "|`#{curr_ref}`| [files](https://github.com/nwtgck/ray-tracing-iow-scala/tree/#{curr_ref}) | [diff](https://github.com/nwtgck/ray-tracing-iow-scala/compare/#{pref_ref}...#{curr_ref})|[#{curr_ref}.png](image_logs/pngs/#{curr_ref}.png)|"
 }
