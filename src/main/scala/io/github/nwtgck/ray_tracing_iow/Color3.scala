@@ -13,4 +13,6 @@ case class Color3(r: Float, g: Float, b: Float){
   val ir: Int = colorElemToInt(r)
   val ig: Int = colorElemToInt(g)
   val ib: Int = colorElemToInt(b)
+
+  val rgbInt: Int = ((ir & 0xFF) << 16) | ((ig & 0xFF) << 8) | ((ib & 0xFF) << 0)
 }

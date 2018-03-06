@@ -1,6 +1,8 @@
 package io.github.nwtgck.ray_tracing_iow
 
+import java.awt.image.BufferedImage
 import java.io.{FileOutputStream, OutputStream, PrintStream}
+import javax.imageio.ImageIO
 
 import scala.util.Random
 
@@ -139,8 +141,8 @@ object Main {
 
   def renderToOutputStream(options: RayTracingIOWOptions, outputStream: OutputStream): Unit = {
 
-    val width : Int = options.width
-    val height: Int = options.height
+    val width  : Int = options.width
+    val height : Int = options.height
     val ns    : Int = options.ns
     val imgExt: ImgExtension = options.outImgExtension
 
@@ -155,53 +157,54 @@ object Main {
       lookat    = lookat,
       vup       = Vec3(0f, 1f, 0f),
       vfov      = 20f,
-      aspect    = height.toFloat / width,
+      aspect    = width.toFloat / height,
       aperture  = aperture,
       focusDist = focusDist
     )
 
-    val colors: Stream[Color3] = for{
-      j <- (width - 1 to 0 by -1).toStream
-      i <- (0 until height).toStream
+    val colorAndPoss: Stream[(Color3, (Int, Int))] = for{
+      j <- (height - 1 to 0 by -1).toStream
+      i <- (0 until width).toStream
     } yield {
       // TODO: Make it declarative
       var col: Color3 = Color3(0f, 0f, 0f)
       for(s <- 0 until ns){
-        val u: Float = (i + rand.nextFloat()) / height
-        val v: Float = (j + rand.nextFloat()) / width
+        val u: Float = (i + rand.nextFloat()) / width
+        val v: Float = (j + rand.nextFloat()) / height
         val r: Ray   = camera.getRay(rand, u, v)
         col = col + color(r, hitable, 0)
       }
       col = col / ns.toFloat
       col = Color3(Math.sqrt(col.r).toFloat, Math.sqrt(col.g).toFloat, Math.sqrt(col.b).toFloat)
-      col
+      (col, (i, j))
     }
 
     imgExt match {
       case PPMImgExtension =>
-
         val out = new PrintStream(outputStream)
         out.println(
           s"""P3
-             |${height} ${width}
+             |${width} ${height}
              |255""".stripMargin)
 
-        for(col <- colors){
+        for((col, _) <- colorAndPoss){
           out.println(s"${col.ir} ${col.ig} ${col.ib}")
         }
       case _ =>
-        println("TODO: Implement") // TODO: impl
-
+        val image: BufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+        for((col, (x, y)) <- colorAndPoss){
+          image.setRGB(x, height -1 - y, col.rgbInt)
+        }
+        ImageIO.write(image, imgExt.name, outputStream)
     }
-
   }
 
   def main(args: Array[String]): Unit = {
 
     val defaultOpts: RayTracingIOWOptions =
       RayTracingIOWOptions(
-        width          = 400,
-        height         = 600,
+        width          = 600,
+        height         = 400,
         ns             = 10,
         outfilePathOpt = None,
         outImgExtension = PPMImgExtension
