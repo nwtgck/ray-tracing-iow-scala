@@ -72,12 +72,17 @@ object Main {
       SphereHitable(
         center   = Vec3(1f, 0f, -1f),
         radius   = 0.5f,
-        material = MetalMaterial(albedo = Vec3(0.8f, 0.6f, 0.2f), f = 0.0f)
+        material = MetalMaterial(albedo = Vec3(0.8f, 0.6f, 0.2f), f = 0.2f)
       ),
       SphereHitable(
         center   = Vec3(-1f, 0f, -1f),
         radius   = 0.5f,
-        material = DielectricMaterial(refIdx = 1.5f)
+        material = DielectricMaterial(refIdx = 1.5f, rand = rand)
+      ),
+      SphereHitable(
+        center   = Vec3(-1f, 0f, -1f),
+        radius   = -0.45f,
+        material = DielectricMaterial(refIdx = 1.5f, rand = rand)
       )
     )
 

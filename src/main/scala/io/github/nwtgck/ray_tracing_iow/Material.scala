@@ -1,5 +1,7 @@
 package io.github.nwtgck.ray_tracing_iow
 
+import scala.util.Random
+
 case class ScatterRecord(attenuation: Vec3, scattered: Ray)
 
 abstract class Material {
@@ -21,6 +23,12 @@ object MaterialUtils{
     } else {
       None
     }
+  }
+
+  def schlick(cosine: Float, refIdx: Float): Float = {
+    val r0: Float       = (1f - refIdx) / (1 + refIdx)
+    val `r0 ^ 2`: Float = r0 * r0
+    `r0 ^ 2` + (1 - `r0 ^ 2`) * Math.pow(1f - cosine, 5f).toFloat
   }
 }
 
@@ -58,26 +66,43 @@ case class MetalMaterial(albedo: Vec3, f: Float) extends Material{
   }
 }
 
-case class DielectricMaterial(refIdx: Float) extends Material {
+case class DielectricMaterial(refIdx: Float, rand: Random) extends Material {
   override def scatter(rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord] = {
     val reflected: Vec3 = MaterialUtils.reflect(rIn.direction, hitRecord.normal)
 
     val attenuation: Vec3 = Vec3(1.0f, 1.0f, 1.0f)
 
-    val (outwardNormal: Vec3, niOverNt: Float) =
+    val (
+      outwardNormal: Vec3,
+      niOverNt     : Float,
+      cosine       : Float
+    ) =
       if(rIn.direction.dot(hitRecord.normal) > 0f){
-        (-hitRecord.normal, refIdx)
+        (
+          -hitRecord.normal,
+          refIdx,
+          refIdx * rIn.direction.dot(hitRecord.normal) / rIn.direction.length
+        )
       } else {
-        (hitRecord.normal, 1.0f / refIdx)
+        (
+          hitRecord.normal,
+          1.0f / refIdx,
+          -(rIn.direction.dot(hitRecord.normal)) / rIn.direction.length
+        )
       }
 
-    // NOTE: You may use map instead of `match`
+    val reflectProb: Float = MaterialUtils.schlick(cosine, refIdx)
+
     MaterialUtils.refract(rIn.direction, outwardNormal, niOverNt) match {
-      case Some(refracted) => Some(ScatterRecord(
+      case Some(refracted) if reflectProb <= rand.nextFloat() =>
+        Some(ScatterRecord(
+          attenuation = attenuation,
+          scattered = Ray(hitRecord.p, refracted)
+        ))
+      case _ => Some(ScatterRecord(
         attenuation = attenuation,
-        scattered = Ray(hitRecord.p, refracted)
+        scattered = Ray(hitRecord.p, reflected)
       ))
-      case None => None
     }
   }
 }
