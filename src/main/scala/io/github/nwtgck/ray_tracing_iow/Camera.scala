@@ -1,21 +1,25 @@
 package io.github.nwtgck.ray_tracing_iow
 
-class Camera(vfov: Float, aspect: Float) {
+case class Camera(lookfrom: Vec3, lookat: Vec3, vup: Vec3, vfov: Float, aspect: Float) {
+
+  // NOTE: Should hide some fields
 
   val theta     : Float = vfov * Math.PI.toFloat / 180f
   val halfHeight: Float = Math.tan(theta / 2f).toFloat
   val halfWidth : Float = aspect * halfHeight
+  val origin    : Vec3 = lookfrom
+  val w         : Vec3 = (lookfrom - lookat).unitVector
+  val u         : Vec3 = vup.cross(w).unitVector
+  val v         : Vec3 = w.cross(u)
 
+  val lowerLeftCorner: Vec3 = origin - u * halfHeight -  v * halfHeight - w
+  val horizontal     : Vec3 = u * 2 * halfWidth
+  val vertical       : Vec3 = v * 2 * halfHeight
 
-  val lowerLeftCorner: Vec3 = Vec3(-halfWidth, -halfHeight, -1.0f)
-  val horizontal     : Vec3 = Vec3(2f * halfWidth, 0.0f, 0.0f)
-  val vertical       : Vec3 = Vec3(0.0f, 2f * halfHeight, 0.0f)
-  val origin         : Vec3 = Vec3(0.0f, 0.0f, 0.0f)
-
-  def getRay(u: Float, v: Float): Ray = {
+  def getRay(s: Float, t: Float): Ray = {
     Ray(
       origin    = origin,
-      direction = lowerLeftCorner + horizontal * u + vertical * v
+      direction = lowerLeftCorner + horizontal * s + vertical * t - origin
     )
   }
 }
