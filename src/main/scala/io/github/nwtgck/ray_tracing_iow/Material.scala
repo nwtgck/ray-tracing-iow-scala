@@ -5,7 +5,7 @@ import scala.util.Random
 case class ScatterRecord(attenuation: Vec3, scattered: Ray)
 
 abstract class Material {
-  def scatter(rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord]
+  def scatter(rand: Random, rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord]
 }
 
 object MaterialUtils{
@@ -33,9 +33,9 @@ object MaterialUtils{
 }
 
 case class LambertMaterial(albedo: Vec3) extends Material{
-  override def scatter(rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord] = {
+  override def scatter(rand: Random, rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord] = {
     // TODO: Not to use `Main.randomInUnitSphare()`, Should move `Main.randomInUnitSphare()` to object `Utils` or etc.
-    val target: Vec3 = hitRecord.p + hitRecord.normal + Main.randomInUnitSphare()
+    val target: Vec3 = hitRecord.p + hitRecord.normal + Main.randomInUnitSphare(rand)
 
     Some(ScatterRecord(
       attenuation = albedo,
@@ -48,12 +48,12 @@ case class MetalMaterial(albedo: Vec3, f: Float) extends Material{
 
   val fuzz: Float = if(f < 1) f else 1
 
-  override def scatter(rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord] = {
+  override def scatter(rand: Random, rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord] = {
 
     val reflected: Vec3 = MaterialUtils.reflect(rIn.direction.unitVector, hitRecord.normal)
 
     // TODO: Not to use `Main.randomInUnitSphare()`, Should move `Main.randomInUnitSphare()` to object `Utils` or etc.
-    val scattered: Ray = Ray(hitRecord.p, reflected + Main.randomInUnitSphare() * fuzz)
+    val scattered: Ray = Ray(hitRecord.p, reflected + Main.randomInUnitSphare(rand) * fuzz)
 
     if(scattered.direction.dot(hitRecord.normal) > 0){
       Some(ScatterRecord(
@@ -66,8 +66,8 @@ case class MetalMaterial(albedo: Vec3, f: Float) extends Material{
   }
 }
 
-case class DielectricMaterial(refIdx: Float, rand: Random) extends Material {
-  override def scatter(rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord] = {
+case class DielectricMaterial(refIdx: Float) extends Material {
+  override def scatter(rand: Random, rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord] = {
     val reflected: Vec3 = MaterialUtils.reflect(rIn.direction, hitRecord.normal)
 
     val attenuation: Vec3 = Vec3(1.0f, 1.0f, 1.0f)

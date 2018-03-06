@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage
 import java.io.{FileOutputStream, OutputStream, PrintStream}
 import javax.imageio.ImageIO
 
+import scala.collection.parallel.immutable.ParSeq
 import scala.util.Random
 
 case class RayTracingIOWOptions(width: Int,
@@ -20,9 +21,7 @@ case object GifImgExtension extends ImgExtension("gif")
 
 object Main {
 
-  val rand: Random = new Random(seed=101)
-
-  def randomInUnitSphare(): Vec3 = {
+  def randomInUnitSphare(rand: Random): Vec3 = {
     // TODO: Make it declarative
     var p: Vec3 = Vec3(0f, 0f, 0f)
     do {
@@ -31,14 +30,14 @@ object Main {
     p
   }
 
-  def color(r: Ray, hitable: Hitable, depth: Int): Color3 = {
+  def color(rand: Random, r: Ray, hitable: Hitable, depth: Int): Color3 = {
 
     hitable.hit(r, 0.001f, Float.MaxValue) match {
       case Some(hitRecord) =>
         if(depth < 50){
-          hitRecord.material.scatter(r, hitRecord) match {
+          hitRecord.material.scatter(rand, r, hitRecord) match {
             case Some(ScatterRecord(attenuation, scattered)) =>
-              val col = color(scattered, hitable, depth+1)
+              val col = color(rand, scattered, hitable, depth+1)
               Color3(col.r * attenuation.x, col.g * attenuation.y, col.b * attenuation.z)
             case None =>
               Color3(0f, 0f, 0f)
@@ -55,7 +54,7 @@ object Main {
     }
   }
 
-  def randomScene(): Hitable = {
+  def randomScene(rand: Random): Hitable = {
 
     // TODO: Make it declarative
 
@@ -106,7 +105,7 @@ object Main {
           hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
             center   = center,
             radius   = 0.2f,
-            material = DielectricMaterial(refIdx = 1.5f, rand)
+            material = DielectricMaterial(refIdx = 1.5f)
           )
         }
       }
@@ -116,8 +115,7 @@ object Main {
       center   = Vec3(0f, 1f, 0f),
       radius   = 1.0f,
       material = DielectricMaterial(
-        refIdx = 1.5f,
-        rand
+        refIdx = 1.5f
       )
     )
     hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
@@ -139,14 +137,14 @@ object Main {
     ListHitable(hittables: _*)
   }
 
-  def renderToOutputStream(options: RayTracingIOWOptions, outputStream: OutputStream): Unit = {
+  def renderToOutputStream(rand: Random, options: RayTracingIOWOptions, outputStream: OutputStream): Unit = {
 
     val width  : Int = options.width
     val height : Int = options.height
     val ns    : Int = options.ns
     val imgExt: ImgExtension = options.outImgExtension
 
-    val hitable        : Hitable = randomScene()
+    val hitable        : Hitable = randomScene(rand)
 
     val lookfrom: Vec3 = Vec3(13f, 2f, 3f)
     val lookat  : Vec3 = Vec3(0f, 0f, 0f)
@@ -162,17 +160,26 @@ object Main {
       focusDist = focusDist
     )
 
-    val colorAndPoss: Stream[(Color3, (Int, Int))] = for{
+    // Pairs of Position and Seed
+    val posAndSeeds: Stream[((Int, Int), Int)] = for{
       j <- (height - 1 to 0 by -1).toStream
       i <- (0 until width).toStream
+      seed = rand.nextInt()
+    } yield ((i, j), seed)
+
+    val colorAndPosPar: ParSeq[(Color3, (Int, Int))] = for{
+      ((i, j), seed) <- posAndSeeds.par
     } yield {
       // TODO: Make it declarative
+
+      val rand: Random = new Random(seed = seed)
+
       var col: Color3 = Color3(0f, 0f, 0f)
       for(s <- 0 until ns){
         val u: Float = (i + rand.nextFloat()) / width
         val v: Float = (j + rand.nextFloat()) / height
         val r: Ray   = camera.getRay(rand, u, v)
-        col = col + color(r, hitable, 0)
+        col = col + color(rand, r, hitable, 0)
       }
       col = col / ns.toFloat
       col = Color3(Math.sqrt(col.r).toFloat, Math.sqrt(col.g).toFloat, Math.sqrt(col.b).toFloat)
@@ -187,12 +194,12 @@ object Main {
              |${width} ${height}
              |255""".stripMargin)
 
-        for((col, _) <- colorAndPoss){
+        for((col, pos) <- colorAndPosPar.toStream){ // NOTE: toStream is necessary to be sure that colors are ordered
           out.println(s"${col.ir} ${col.ig} ${col.ib}")
         }
       case _ =>
         val image: BufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-        for((col, (x, y)) <- colorAndPoss){
+        for((col, (x, y)) <- colorAndPosPar){
           image.setRGB(x, height -1 - y, col.rgbInt)
         }
         ImageIO.write(image, imgExt.name, outputStream)
@@ -246,8 +253,11 @@ object Main {
           options.outfilePathOpt.map{path => new PrintStream(new FileOutputStream(path))}
             .getOrElse(System.out)
 
+        // Create random generator
+        val rand = new Random(seed=101)
+
         // Render ray-tracing image to the output stream
-        renderToOutputStream(options, outputStream)
+        renderToOutputStream(rand, options, outputStream)
 
         // Close the output stream
         outputStream.close()
