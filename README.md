@@ -35,7 +35,7 @@ Then you will get `out.ppm` image
 
 ## Change History
 
-Here is the history of this repository. You can go to walk through the history
+Here is the history of this repository. You can walk through the history
 
 <!-- AUTO GEN by autogen_scripts/gen_history_md.rb -->
 |Tag|Files at that point|Diff
