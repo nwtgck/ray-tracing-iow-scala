@@ -1,15 +1,24 @@
 package io.github.nwtgck.ray_tracing_iow
 
-import java.io.{FileOutputStream, PrintStream}
+import java.io.{FileOutputStream, OutputStream, PrintStream}
 
-import scala.util.{Random, Try}
+import scala.util.Random
 
-case class RayTracingIOWOptions(width: Int, height: Int, ns: Int, outfilePathOpt: Option[String])
+case class RayTracingIOWOptions(width: Int,
+                                height: Int,
+                                ns: Int,
+                                outfilePathOpt: Option[String],
+                                outImgExtension: ImgExtension)
+
+sealed class ImgExtension(val name: String)
+case object PPMImgExtension extends ImgExtension("ppm")
+case object PNGImgExtension extends ImgExtension("png")
+case object JPGImgExtension extends ImgExtension("jpg")
+case object GifImgExtension extends ImgExtension("gif")
 
 object Main {
 
   val rand: Random = new Random(seed=101)
-
 
   def randomInUnitSphare(): Vec3 = {
     // TODO: Make it declarative
@@ -128,6 +137,65 @@ object Main {
     ListHitable(hittables: _*)
   }
 
+  def renderToOutputStream(options: RayTracingIOWOptions, outputStream: OutputStream): Unit = {
+
+    val width : Int = options.width
+    val height: Int = options.height
+    val ns    : Int = options.ns
+    val imgExt: ImgExtension = options.outImgExtension
+
+    val hitable        : Hitable = randomScene()
+
+    val lookfrom: Vec3 = Vec3(13f, 2f, 3f)
+    val lookat  : Vec3 = Vec3(0f, 0f, 0f)
+    val focusDist: Float = 10.0f
+    val aperture   : Float = 0.1f
+    val camera: Camera = Camera(
+      lookfrom  = lookfrom,
+      lookat    = lookat,
+      vup       = Vec3(0f, 1f, 0f),
+      vfov      = 20f,
+      aspect    = height.toFloat / width,
+      aperture  = aperture,
+      focusDist = focusDist
+    )
+
+    val colors: Stream[Color3] = for{
+      j <- (width - 1 to 0 by -1).toStream
+      i <- (0 until height).toStream
+    } yield {
+      // TODO: Make it declarative
+      var col: Color3 = Color3(0f, 0f, 0f)
+      for(s <- 0 until ns){
+        val u: Float = (i + rand.nextFloat()) / height
+        val v: Float = (j + rand.nextFloat()) / width
+        val r: Ray   = camera.getRay(rand, u, v)
+        col = col + color(r, hitable, 0)
+      }
+      col = col / ns.toFloat
+      col = Color3(Math.sqrt(col.r).toFloat, Math.sqrt(col.g).toFloat, Math.sqrt(col.b).toFloat)
+      col
+    }
+
+    imgExt match {
+      case PPMImgExtension =>
+
+        val out = new PrintStream(outputStream)
+        out.println(
+          s"""P3
+             |${height} ${width}
+             |255""".stripMargin)
+
+        for(col <- colors){
+          out.println(s"${col.ir} ${col.ig} ${col.ib}")
+        }
+      case _ =>
+        println("TODO: Implement") // TODO: impl
+
+    }
+
+  }
+
   def main(args: Array[String]): Unit = {
 
     val defaultOpts: RayTracingIOWOptions =
@@ -135,7 +203,8 @@ object Main {
         width          = 400,
         height         = 600,
         ns             = 10,
-        outfilePathOpt = None
+        outfilePathOpt = None,
+        outImgExtension = PPMImgExtension
       )
 
     val parser = new scopt.OptionParser[RayTracingIOWOptions]("Ray Tracing in One Weekend Written in Scala") {
@@ -151,6 +220,17 @@ object Main {
         opts.copy(ns = v)
       } text s"ns (default: ${defaultOpts.ns}})" // TODO Rename
 
+      opt[String]("out-extension") action { (v, opts) =>
+        opts.copy(
+          outImgExtension = v match {
+            case PPMImgExtension.name => PPMImgExtension
+            case PNGImgExtension.name => PNGImgExtension
+            case JPGImgExtension.name => JPGImgExtension
+            case GifImgExtension.name => GifImgExtension
+          }
+        )
+      } text s"extension of output file (default: ${defaultOpts.outImgExtension.name})"
+
       opt[String]("out-file") action { (v, opts) =>
         opts.copy(outfilePathOpt = Some(v))
       } text "path of output file (default: stdout)"
@@ -159,54 +239,15 @@ object Main {
     parser.parse(args, defaultOpts) match {
       case Some(options) =>
         // output
-        val out: PrintStream =
+        val outputStream: OutputStream =
           options.outfilePathOpt.map{path => new PrintStream(new FileOutputStream(path))}
             .getOrElse(System.out)
 
-        val nx: Int = options.height
-        val ny: Int = options.width
-        val ns: Int = options.ns
+        // Render ray-tracing image to the output stream
+        renderToOutputStream(options, outputStream)
 
-        out.println(
-          s"""P3
-             |${nx} ${ny}
-             |255""".stripMargin)
-
-        val hitable        : Hitable = randomScene()
-
-        val lookfrom: Vec3 = Vec3(13f, 2f, 3f)
-        val lookat  : Vec3 = Vec3(0f, 0f, 0f)
-        val focusDist: Float = 10.0f
-        val aperture   : Float = 0.1f
-        val camera: Camera = Camera(
-          lookfrom  = lookfrom,
-          lookat    = lookat,
-          vup       = Vec3(0f, 1f, 0f),
-          vfov      = 20f,
-          aspect    = nx.toFloat / ny,
-          aperture  = aperture,
-          focusDist = focusDist
-        )
-
-        for{
-          j <- ny - 1 to 0 by -1
-          i <- 0 until nx
-        } {
-          // TODO: Make it declarative
-          var col: Color3 = Color3(0f, 0f, 0f)
-          for(s <- 0 until ns){
-            val u: Float = (i + rand.nextFloat()) / nx
-            val v: Float = (j + rand.nextFloat()) / ny
-            val r: Ray   = camera.getRay(rand, u, v)
-            col = col + color(r, hitable, 0)
-          }
-          col = col / ns.toFloat
-          col = Color3(Math.sqrt(col.r).toFloat, Math.sqrt(col.g).toFloat, Math.sqrt(col.b).toFloat)
-          out.println(s"${col.ir} ${col.ig} ${col.ib}")
-        }
-
-        out.close()
-
+        // Close the output stream
+        outputStream.close()
       case None =>
         ()
     }
