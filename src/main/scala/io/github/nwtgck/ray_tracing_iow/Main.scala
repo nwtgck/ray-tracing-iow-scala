@@ -23,7 +23,7 @@ case object GifImgExtension extends ImgExtension("gif")
 
 object Main {
 
-  def randomInUnitSphare(rand: Random): Vec3 =
+  def randomInUnitSphere(rand: Random): Vec3 =
     Stream.continually(
       Vec3(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()) * 2.0f - Vec3(1f, 1f, 1f)
     ).find(_.squaredLength >= 1.0f)
