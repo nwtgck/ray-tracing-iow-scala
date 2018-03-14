@@ -10,6 +10,7 @@ import scala.util.Random
 case class RayTracingIOWOptions(width: Int,
                                 height: Int,
                                 nSamples: Int,
+                                minFloat: Float,
                                 randomSeed: Int,
                                 outfilePathOpt: Option[String],
                                 outImgExtension: ImgExtension)
@@ -31,14 +32,14 @@ object Main {
     p
   }
 
-  def color(rand: Random, r: Ray, hitable: Hitable, depth: Int): Color3 = {
+  def color(rand: Random, r: Ray, hitable: Hitable, minFloat: Float, depth: Int): Color3 = {
 
-    hitable.hit(r, 0.001f, Float.MaxValue) match {
+    hitable.hit(r, minFloat, Float.MaxValue) match {
       case Some(hitRecord) =>
         if(depth < 50){
           hitRecord.material.scatter(rand, r, hitRecord) match {
             case Some(ScatterRecord(attenuation, scattered)) =>
-              val col = color(rand, scattered, hitable, depth+1)
+              val col = color(rand, scattered, hitable, minFloat, depth+1)
               Color3(col.r * attenuation.r, col.g * attenuation.g, col.b * attenuation.b)
             case None =>
               Color3(0f, 0f, 0f)
@@ -142,7 +143,8 @@ object Main {
 
     val width  : Int = options.width
     val height : Int = options.height
-    val ns    : Int = options.nSamples
+    val minFloat : Float = options.minFloat
+    val ns     : Int = options.nSamples
     val imgExt: ImgExtension = options.outImgExtension
 
     val rand: Random = new Random(options.randomSeed)
@@ -182,7 +184,7 @@ object Main {
         val u: Float = (i + rand.nextFloat()) / width
         val v: Float = (j + rand.nextFloat()) / height
         val r: Ray   = camera.getRay(rand, u, v)
-        col = col + color(rand, r, hitable, 0)
+        col = col + color(rand, r, hitable, minFloat, 0)
       }
       col = col / ns.toFloat
       col = Color3(Math.sqrt(col.r).toFloat, Math.sqrt(col.g).toFloat, Math.sqrt(col.b).toFloat)
@@ -215,6 +217,7 @@ object Main {
       RayTracingIOWOptions(
         width          = 600,
         height         = 400,
+        minFloat       = 0.001f,
         randomSeed     = 101,
         nSamples       = 10,
         outfilePathOpt = None,
@@ -229,6 +232,10 @@ object Main {
       opt[Int]("height") action { (v, opts) =>
         opts.copy(height = v)
       } text s"height (default: ${defaultOpts.height})"
+
+      opt[Double]("min-float") action { (v, opts) =>
+        opts.copy(minFloat = v.toFloat)
+      } text s"min-float (default: ${defaultOpts.minFloat})"
 
       opt[Int]("n-samples") action { (v, opts) =>
         opts.copy(nSamples = v)

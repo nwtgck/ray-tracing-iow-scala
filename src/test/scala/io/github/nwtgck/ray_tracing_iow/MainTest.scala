@@ -12,6 +12,7 @@ class MainTest extends FunSuite with Matchers{
       RayTracingIOWOptions(
         width          = 150,
         height         = 100,
+        minFloat       = 0.001f,
         nSamples       = 10,
         randomSeed     = 101,
         outfilePathOpt = None,
