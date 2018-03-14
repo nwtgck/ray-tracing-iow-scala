@@ -3,15 +3,11 @@ package io.github.nwtgck.ray_tracing_iow
 import scala.util.Random
 
 object CameraUtils{
-  def randomInUnitDisk(rand: Random): Vec3 = {
-    // TODO: Make it declarative
-    // NOTE: Safe null because it will be assigned in do-while
-    var p: Vec3 = null
-    do {
-      p = Vec3(rand.nextFloat(), rand.nextFloat(), 0f) * 2.0f - Vec3(1f, 1f, 0f)
-    } while(p.dot(p) >= 1.0f)
-    p
-  }
+  def randomInUnitDisk(rand: Random): Vec3 =
+    Stream.continually(
+      Vec3(rand.nextFloat(), rand.nextFloat(), 0f) * 2.0f - Vec3(1f, 1f, 0f)
+    ).find(p => p.dot(p) >= 1.0f)
+     .get // NOTE: `get` is logically safe
 }
 
 case class Camera(lookfrom: Vec3, lookat: Vec3, vup: Vec3, vfov: Float, aspect: Float, aperture: Float, focusDist: Float) {
