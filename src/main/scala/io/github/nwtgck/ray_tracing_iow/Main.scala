@@ -10,6 +10,7 @@ import scala.util.Random
 case class RayTracingIOWOptions(width: Int,
                                 height: Int,
                                 nSamples: Int,
+                                randomSeed: Int,
                                 outfilePathOpt: Option[String],
                                 outImgExtension: ImgExtension)
 
@@ -137,12 +138,14 @@ object Main {
     ListHitable(hittables: _*)
   }
 
-  def renderToOutputStream(rand: Random, options: RayTracingIOWOptions, outputStream: OutputStream): Unit = {
+  def renderToOutputStream(options: RayTracingIOWOptions, outputStream: OutputStream): Unit = {
 
     val width  : Int = options.width
     val height : Int = options.height
     val ns    : Int = options.nSamples
     val imgExt: ImgExtension = options.outImgExtension
+
+    val rand: Random = new Random(options.randomSeed)
 
     val hitable        : Hitable = randomScene(rand)
 
@@ -212,7 +215,8 @@ object Main {
       RayTracingIOWOptions(
         width          = 600,
         height         = 400,
-        nSamples             = 10,
+        randomSeed     = 101,
+        nSamples       = 10,
         outfilePathOpt = None,
         outImgExtension = PPMImgExtension
       )
@@ -228,7 +232,11 @@ object Main {
 
       opt[Int]("n-samples") action { (v, opts) =>
         opts.copy(nSamples = v)
-      } text s"n-samples (default: ${defaultOpts.nSamples}})"
+      } text s"n-samples (default: ${defaultOpts.nSamples})"
+
+      opt[Int]("random-seed") action { (v, opts) =>
+        opts.copy(randomSeed = v)
+      } text s"random-seed (default: ${defaultOpts.randomSeed})"
 
       opt[String]("out-extension") action { (v, opts) =>
         opts.copy(
@@ -253,11 +261,8 @@ object Main {
           options.outfilePathOpt.map{path => new PrintStream(new FileOutputStream(path))}
             .getOrElse(System.out)
 
-        // Create random generator
-        val rand = new Random(seed=101)
-
         // Render ray-tracing image to the output stream
-        renderToOutputStream(rand, options, outputStream)
+        renderToOutputStream(options, outputStream)
 
         // Close the output stream
         outputStream.close()
