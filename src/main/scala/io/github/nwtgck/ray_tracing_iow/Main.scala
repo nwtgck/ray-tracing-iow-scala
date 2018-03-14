@@ -39,7 +39,7 @@ object Main {
           hitRecord.material.scatter(rand, r, hitRecord) match {
             case Some(ScatterRecord(attenuation, scattered)) =>
               val col = color(rand, scattered, hitable, depth+1)
-              Color3(col.r * attenuation.x, col.g * attenuation.y, col.b * attenuation.z)
+              Color3(col.r * attenuation.r, col.g * attenuation.g, col.b * attenuation.b)
             case None =>
               Color3(0f, 0f, 0f)
           }
@@ -64,7 +64,7 @@ object Main {
     hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
       center   = Vec3(0f, -1000f, 0f),
       radius   = 1000f,
-      material = LambertMaterial(albedo = Vec3(0.5f, 0.5f, 0.5f))
+      material = LambertMaterial(albedo = Color3(0.5f, 0.5f, 0.5f))
     )
     for{
       a <- -11 until 11
@@ -82,7 +82,7 @@ object Main {
             center   = center,
             radius   =  0.2f,
             material = LambertMaterial(
-              albedo = Vec3(
+              albedo = Color3(
                 rand.nextFloat() * rand.nextFloat(),
                 rand.nextFloat() * rand.nextFloat(),
                 rand.nextFloat() * rand.nextFloat()
@@ -94,7 +94,7 @@ object Main {
             center   = center,
             radius   = 0.2f,
             material = MetalMaterial(
-              albedo = Vec3(
+              albedo = Color3(
                 0.5f * (1 + rand.nextFloat()),
                 0.5f * (1 + rand.nextFloat()),
                 0.5f * (1 + rand.nextFloat())
@@ -123,14 +123,14 @@ object Main {
       center   = Vec3(-4f, 1f, 0f),
       radius   =  1.0f,
       material = LambertMaterial(
-        albedo = Vec3(0.4f, 0.2f, 0.1f)
+        albedo = Color3(0.4f, 0.2f, 0.1f)
       )
     )
     hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
       center   = Vec3(4f, 1f, 0f),
       radius   = 1.0f,
       material = MetalMaterial(
-        albedo = Vec3(0.7f, 0.6f, 0.5f),
+        albedo = Color3(0.7f, 0.6f, 0.5f),
         f      = 0.0f
       )
     )

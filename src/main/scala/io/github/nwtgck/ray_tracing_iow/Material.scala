@@ -2,7 +2,7 @@ package io.github.nwtgck.ray_tracing_iow
 
 import scala.util.Random
 
-case class ScatterRecord(attenuation: Vec3, scattered: Ray)
+case class ScatterRecord(attenuation: Color3, scattered: Ray)
 
 abstract class Material {
   def scatter(rand: Random, rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord]
@@ -32,7 +32,7 @@ object MaterialUtils{
   }
 }
 
-case class LambertMaterial(albedo: Vec3) extends Material{
+case class LambertMaterial(albedo: Color3) extends Material{
   override def scatter(rand: Random, rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord] = {
     // TODO: Not to use `Main.randomInUnitSphare()`, Should move `Main.randomInUnitSphare()` to object `Utils` or etc.
     val target: Vec3 = hitRecord.p + hitRecord.normal + Main.randomInUnitSphare(rand)
@@ -44,7 +44,7 @@ case class LambertMaterial(albedo: Vec3) extends Material{
   }
 }
 
-case class MetalMaterial(albedo: Vec3, f: Float) extends Material{
+case class MetalMaterial(albedo: Color3, f: Float) extends Material{
 
   val fuzz: Float = if(f < 1) f else 1
 
@@ -70,7 +70,7 @@ case class DielectricMaterial(refIdx: Float) extends Material {
   override def scatter(rand: Random, rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord] = {
     val reflected: Vec3 = MaterialUtils.reflect(rIn.direction, hitRecord.normal)
 
-    val attenuation: Vec3 = Vec3(1.0f, 1.0f, 1.0f)
+    val attenuation: Color3 = Color3(1.0f, 1.0f, 1.0f)
 
     val (
       outwardNormal: Vec3,
