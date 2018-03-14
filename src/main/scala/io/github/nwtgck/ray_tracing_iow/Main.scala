@@ -175,14 +175,20 @@ object Main {
       // TODO: Make it declarative
 
       val rand: Random = new Random(seed = seed)
+      
+      // Create random seeds (this is for reproducibility)
+      val randomSeeds: Seq[Int] = (0 until ns).map(_ => rand.nextInt())
 
-      var col: Color3 = Color3(0f, 0f, 0f)
-      for(s <- 0 until ns){
-        val u: Float = (i + rand.nextFloat()) / width
-        val v: Float = (j + rand.nextFloat()) / height
-        val r: Ray   = camera.getRay(rand, u, v)
-        col = col + color(rand, r, hitable, minFloat, 0)
-      }
+      var col: Color3 =
+        (for(seed <- randomSeeds.par)
+          yield {
+            val rand: Random = new Random(seed)
+            val u: Float = (i + rand.nextFloat()) / width
+            val v: Float = (j + rand.nextFloat()) / height
+            val r: Ray   = camera.getRay(rand, u, v)
+            color(rand, r, hitable, minFloat, 0)
+          }
+        ).reduce(_ + _)
       col = col / ns.toFloat
       col = Color3(Math.sqrt(col.r).toFloat, Math.sqrt(col.g).toFloat, Math.sqrt(col.b).toFloat)
       (col, (i, j))
