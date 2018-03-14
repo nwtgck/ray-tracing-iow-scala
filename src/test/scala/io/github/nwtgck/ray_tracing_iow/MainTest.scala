@@ -1,6 +1,6 @@
 package io.github.nwtgck.ray_tracing_iow
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream}
+import java.io.{ByteArrayOutputStream, InputStream}
 
 import org.scalatest.{FunSuite, Matchers}
 
@@ -16,7 +16,7 @@ class MainTest extends FunSuite with Matchers{
       RayTracingIOWOptions(
         width          = 150,
         height         = 100,
-        ns             = 10,
+        nSamples       = 10,
         outfilePathOpt = None,
         outImgExtension = PPMImgExtension
       ),

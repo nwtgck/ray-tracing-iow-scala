@@ -9,7 +9,7 @@ import scala.util.Random
 
 case class RayTracingIOWOptions(width: Int,
                                 height: Int,
-                                ns: Int,
+                                nSamples: Int,
                                 outfilePathOpt: Option[String],
                                 outImgExtension: ImgExtension)
 
@@ -141,7 +141,7 @@ object Main {
 
     val width  : Int = options.width
     val height : Int = options.height
-    val ns    : Int = options.ns
+    val ns    : Int = options.nSamples
     val imgExt: ImgExtension = options.outImgExtension
 
     val hitable        : Hitable = randomScene(rand)
@@ -212,7 +212,7 @@ object Main {
       RayTracingIOWOptions(
         width          = 600,
         height         = 400,
-        ns             = 10,
+        nSamples             = 10,
         outfilePathOpt = None,
         outImgExtension = PPMImgExtension
       )
@@ -226,9 +226,9 @@ object Main {
         opts.copy(height = v)
       } text s"height (default: ${defaultOpts.height})"
 
-      opt[Int]("ns") action { (v, opts) =>
-        opts.copy(ns = v)
-      } text s"ns (default: ${defaultOpts.ns}})" // TODO Rename
+      opt[Int]("n-samples") action { (v, opts) =>
+        opts.copy(nSamples = v)
+      } text s"n-samples (default: ${defaultOpts.nSamples}})"
 
       opt[String]("out-extension") action { (v, opts) =>
         opts.copy(

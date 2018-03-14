@@ -40,7 +40,7 @@ Usage: Ray Tracing in One Weekend Written in Scala [options]
 
   --width <value>          width (default: 600)
   --height <value>         height (default: 400)
-  --ns <value>             ns (default: 10})
+  --n-samples <value>      n-samples (default: 10})
   --out-extension <value>  extension of output file (default: ppm)
   --out-file <value>       path of output file (default: stdout)
 ```
