@@ -6,7 +6,7 @@ object CameraUtils{
   def randomInUnitDisk(rand: Random): Vec3 =
     Stream.continually(
       Vec3(rand.nextFloat(), rand.nextFloat(), 0f) * 2.0f - Vec3(1f, 1f, 0f)
-    ).find(p => p.dot(p) >= 1.0f)
+    ).find(p => p.dot(p) < 1.0f)
      .get // NOTE: `get` is logically safe
 }
 

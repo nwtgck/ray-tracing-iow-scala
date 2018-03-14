@@ -26,7 +26,7 @@ object Main {
   def randomInUnitSphere(rand: Random): Vec3 =
     Stream.continually(
       Vec3(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()) * 2.0f - Vec3(1f, 1f, 1f)
-    ).find(_.squaredLength >= 1.0f)
+    ).find(_.squaredLength < 1.0f)
      .get // NOTE: `get` is logically safe
 
   def color(rand: Random, r: Ray, hitable: Hitable, minFloat: Float, depth: Int): Color3 = {
