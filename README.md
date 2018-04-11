@@ -1,5 +1,5 @@
 # ray-tracing-iow
-[![Build Status](https://travis-ci.com/nwtgck/ray-tracing-iow-scala.svg?token=TuxNpqznwwyy7hyJwBVm&branch=master)](https://travis-ci.com/nwtgck/ray-tracing-iow-scala)
+[![Build Status](https://travis-ci.org/nwtgck/ray-tracing-iow-scala.svg?branch=master)](https://travis-ci.org/nwtgck/ray-tracing-iow-scala)
 
 [Ray Tracing in One Weekend](http://in1weekend.blogspot.jp/2016/01/ray-tracing-in-one-weekend.html) Written in Scala
 
