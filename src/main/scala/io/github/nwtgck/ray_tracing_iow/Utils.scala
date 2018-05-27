@@ -1,7 +1,7 @@
 package io.github.nwtgck.ray_tracing_iow
 
 import java.awt.image.BufferedImage
-import java.io.{OutputStream, PrintStream}
+import java.io.{File, FileOutputStream, OutputStream, PrintStream}
 
 import javax.imageio.ImageIO
 
@@ -115,6 +115,19 @@ object Utils {
           image.setRGB(x, height -1 - y, col.rgbInt)
         }
         ImageIO.write(image, imgExt.name, outputStream)
+    }
+  }
+
+
+  def renderAmimeToDir(options: RayTracingIOWOptions, animeGenerator: Random => Seq[Hitable], outDirPath: String): Unit = {
+
+    val rand: Random = new Random(options.randomSeed)
+
+    val hitables: Seq[Hitable] = animeGenerator(rand)
+
+    for((hitable, idx) <- hitables.zipWithIndex){
+      val filePath: String = f"${outDirPath}${File.separator}anime$idx%08d.${options.outImgExtension.name}"
+      renderToOutputStream(options, hitableGenerator = (_: Random) => hitable, outputStream=new FileOutputStream(filePath))
     }
   }
 

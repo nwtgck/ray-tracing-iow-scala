@@ -2,6 +2,8 @@ package io.github.nwtgck.ray_tracing_iow
 
 import java.io.{FileOutputStream, OutputStream, PrintStream}
 
+import scala.util.Random
+
 case class RayTracingIOWOptions(width: Int,
                                 height: Int,
                                 nSamples: Int,
@@ -76,7 +78,11 @@ object Main {
             .getOrElse(System.out)
 
         // Render ray-tracing image to the output stream
-        Utils.renderToOutputStream(options, Hitables.defaultHitableGenerator, outputStream)
+//        Utils.renderToOutputStream(options, Hitables.defaultHitableGenerator, outputStream)
+//        Utils.renderToOutputStream(options, (rand: Random) => Hitables.defaultAnimationGenerator(0.1f)(rand).toList(1), outputStream)
+
+        // TODO: Hard code
+        Utils.renderAmimeToDir(options, Hitables.defaultAnimationGenerator(maxT = 10.0f), "anime_out")
 
         // Close the output stream
         outputStream.close()
