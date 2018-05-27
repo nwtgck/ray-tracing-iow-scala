@@ -10,13 +10,20 @@ case class RayTracingIOWOptions(width: Int,
                                 minFloat: Float,
                                 randomSeed: Int,
                                 outfilePathOpt: Option[String],
+                                mode: Mode,
+                                animeTMax: Float,
+                                animeOutDirPath: String,
                                 outImgExtension: ImgExtension)
 
-sealed class ImgExtension(val name: String)
+sealed abstract class ImgExtension(val name: String)
 case object PPMImgExtension extends ImgExtension("ppm")
 case object PNGImgExtension extends ImgExtension("png")
 case object JPGImgExtension extends ImgExtension("jpg")
 case object GifImgExtension extends ImgExtension("gif")
+
+sealed abstract class Mode(override val toString: String)
+case object ImageMode extends Mode("image")
+case object AnimeMode extends Mode("anime")
 
 object Main {
 
@@ -30,6 +37,9 @@ object Main {
         randomSeed     = 101,
         nSamples       = 10,
         outfilePathOpt = None,
+        mode           = ImageMode,
+        animeTMax      = 4.2f,
+        animeOutDirPath = "anime_out",
         outImgExtension = PPMImgExtension
       )
 
@@ -54,6 +64,24 @@ object Main {
         opts.copy(randomSeed = v)
       } text s"random-seed (default: ${defaultOpts.randomSeed})"
 
+      opt[String]("mode") action { (v, opts) =>
+        val mode = v match {
+          case ImageMode.toString =>
+            ImageMode
+          case AnimeMode.toString =>
+            AnimeMode
+        }
+        opts.copy(mode = mode)
+      } text s"mode - ${ImageMode} or ${AnimeMode} (default: ${defaultOpts.mode})"
+
+      opt[Double]("anime-t-max") action { (v, opts) =>
+        opts.copy(animeTMax = v.toFloat)
+      } text s"anime-t-max (default: ${defaultOpts.animeTMax})"
+
+      opt[String]("anime-out-dir-path") action { (v, opts) =>
+        opts.copy(animeOutDirPath = v)
+      } text s"directory path of output anime images (default: ${defaultOpts.animeOutDirPath})"
+
       opt[String]("out-extension") action { (v, opts) =>
         opts.copy(
           outImgExtension = v match {
@@ -72,20 +100,21 @@ object Main {
 
     parser.parse(args, defaultOpts) match {
       case Some(options) =>
-        // output
-        val outputStream: OutputStream =
-          options.outfilePathOpt.map{path => new PrintStream(new FileOutputStream(path))}
-            .getOrElse(System.out)
+        options.mode match {
+          case ImageMode =>
+            // output
+            val outputStream: OutputStream =
+              options.outfilePathOpt.map{path => new PrintStream(new FileOutputStream(path))}
+                .getOrElse(System.out)
+            // Render ray-tracing image to the output stream
+            Utils.renderToOutputStream(options, Hitables.defaultHitableGenerator, outputStream)
+            // Close the output stream
+            outputStream.close()
+          case AnimeMode =>
+            // Save images to directory
+            Utils.renderAmimeToDir(options, Hitables.defaultAnimationGenerator(maxT = options.animeTMax))
+        }
 
-        // Render ray-tracing image to the output stream
-//        Utils.renderToOutputStream(options, Hitables.defaultHitableGenerator, outputStream)
-//        Utils.renderToOutputStream(options, (rand: Random) => Hitables.defaultAnimationGenerator(0.1f)(rand).toList(1), outputStream)
-
-        // TODO: Hard code
-        Utils.renderAmimeToDir(options, Hitables.defaultAnimationGenerator(maxT = 10.0f), "anime_out")
-
-        // Close the output stream
-        outputStream.close()
       case None =>
         ()
     }

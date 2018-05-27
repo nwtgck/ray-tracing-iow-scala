@@ -119,14 +119,21 @@ object Utils {
   }
 
 
-  def renderAmimeToDir(options: RayTracingIOWOptions, animeGenerator: Random => Seq[Hitable], outDirPath: String): Unit = {
+  def renderAmimeToDir(options: RayTracingIOWOptions, animeGenerator: Random => Seq[Hitable]): Unit = {
+
+    val dirPath = options.animeOutDirPath
+
+    if(!new File(dirPath).exists()){
+      new File(dirPath).mkdirs()
+    }
 
     val rand: Random = new Random(options.randomSeed)
 
     val hitables: Seq[Hitable] = animeGenerator(rand)
 
+
     for((hitable, idx) <- hitables.zipWithIndex){
-      val filePath: String = f"${outDirPath}${File.separator}anime$idx%08d.${options.outImgExtension.name}"
+      val filePath: String = f"${dirPath}${File.separator}anime$idx%08d.${options.outImgExtension.name}"
       renderToOutputStream(options, hitableGenerator = (_: Random) => hitable, outputStream=new FileOutputStream(filePath))
     }
   }

@@ -16,6 +16,9 @@ class MainTest extends FunSuite with Matchers{
         nSamples       = 10,
         randomSeed     = 101,
         outfilePathOpt = None,
+        mode           = ImageMode,
+        animeTMax      = 4.2f,
+        animeOutDirPath = "anime_out",
         outImgExtension = PPMImgExtension
       ),
       Hitables.defaultHitableGenerator,
