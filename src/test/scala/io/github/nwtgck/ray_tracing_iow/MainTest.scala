@@ -8,7 +8,7 @@ class MainTest extends FunSuite with Matchers{
 
   test("Main.renderToOutputStream test") {
     val byteOutputStream = new ByteArrayOutputStream()
-    Main.renderToOutputStream(
+    Utils.renderToOutputStream(
       RayTracingIOWOptions(
         width          = 150,
         height         = 100,
@@ -18,6 +18,7 @@ class MainTest extends FunSuite with Matchers{
         outfilePathOpt = None,
         outImgExtension = PPMImgExtension
       ),
+      Hitables.defaultHitableGenerator,
       byteOutputStream
     )
     val actual: Array[Byte] = byteOutputStream.toByteArray
