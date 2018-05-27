@@ -34,8 +34,7 @@ object MaterialUtils{
 
 case class LambertMaterial(albedo: Color3) extends Material{
   override def scatter(rand: Random, rIn: Ray, hitRecord: HitRecord): Option[ScatterRecord] = {
-    // TODO: Not to use `Main.randomInUnitSphare()`, Should move `Main.randomInUnitSphare()` to object `Utils` or etc.
-    val target: Vec3 = hitRecord.p + hitRecord.normal + Main.randomInUnitSphere(rand)
+    val target: Vec3 = hitRecord.p + hitRecord.normal + Utils.randomInUnitSphere(rand)
 
     Some(ScatterRecord(
       attenuation = albedo,
@@ -52,8 +51,7 @@ case class MetalMaterial(albedo: Color3, f: Float) extends Material{
 
     val reflected: Vec3 = MaterialUtils.reflect(rIn.direction.unitVector, hitRecord.normal)
 
-    // TODO: Not to use `Main.randomInUnitSphare()`, Should move `Main.randomInUnitSphare()` to object `Utils` or etc.
-    val scattered: Ray = Ray(hitRecord.p, reflected + Main.randomInUnitSphere(rand) * fuzz)
+    val scattered: Ray = Ray(hitRecord.p, reflected + Utils.randomInUnitSphere(rand) * fuzz)
 
     if(scattered.direction.dot(hitRecord.normal) > 0){
       Some(ScatterRecord(
