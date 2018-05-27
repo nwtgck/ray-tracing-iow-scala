@@ -17,7 +17,10 @@ script:
   # Test
   - sbt test
   # NOTE: This is just a working-test
+  - sbt "run --out-file=out1.ppm"
+  # NOTE: This is just a working-test
   - ./make_jar.sh
-  - ./run_jar.sh > out.ppm
-  - file out.ppm
-  - wc out.ppm
+  - ./run_jar.sh > out2.ppm
+  - diff out1.ppm out2.ppm
+  - file out1.ppm
+  - wc out1.ppm

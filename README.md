@@ -25,7 +25,7 @@ or
 or
 
 ```bash
-sbt "runMain io.github.nwtgck.ray_tracing_iow.Main --out-file=out.ppm"
+sbt "run --out-file=out.ppm"
 ```
 
 Then you will get `out.ppm` image
