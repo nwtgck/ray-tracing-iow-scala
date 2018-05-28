@@ -11,6 +11,7 @@ case class RayTracingIOWOptions(width: Int,
                                 randomSeed: Int,
                                 outfilePathOpt: Option[String],
                                 mode: Mode,
+                                animeSkipStep: Int,
                                 animeTMax: Float,
                                 animeOutDirPath: String,
                                 outImgExtension: ImgExtension)
@@ -38,6 +39,7 @@ object Main {
         nSamples       = 10,
         outfilePathOpt = None,
         mode           = ImageMode,
+        animeSkipStep  = 3,
         animeTMax      = 6.0f,
         animeOutDirPath = "anime_out",
         outImgExtension = PPMImgExtension
@@ -73,6 +75,10 @@ object Main {
         }
         opts.copy(mode = mode)
       } text s"mode - ${ImageMode} or ${AnimeMode} (default: ${defaultOpts.mode})"
+
+      opt[Int]("anime-skip-step") action { (v, opts) =>
+        opts.copy(animeSkipStep = v)
+      } text s"anime-skip-step (default: ${defaultOpts.animeSkipStep})"
 
       opt[Double]("anime-t-max") action { (v, opts) =>
         opts.copy(animeTMax = v.toFloat)
@@ -115,7 +121,7 @@ object Main {
             Utils.renderAmimeToDir(
               options,
               Utils.skipAnimeGenerator(
-                skipStep       = 5, // TODO: Hard code
+                skipStep       = options.animeSkipStep,
                 animeGenerator = Hitables.defaultAnimationGenerator(maxT = options.animeTMax)
               )
             )

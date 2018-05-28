@@ -17,6 +17,7 @@ class MainTest extends FunSuite with Matchers{
         randomSeed     = 101,
         outfilePathOpt = None,
         mode           = ImageMode,
+        animeSkipStep  = 3,
         animeTMax      = 4.2f,
         animeOutDirPath = "anime_out",
         outImgExtension = PPMImgExtension
