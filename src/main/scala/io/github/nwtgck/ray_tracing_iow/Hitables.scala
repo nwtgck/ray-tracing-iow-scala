@@ -105,9 +105,6 @@ object Hitables {
       */
     case class MovingHitable[P, H <: Hitable](m: Float, k: Float, var v: Float, var y: Float, hitableGenerator: P => H)
 
-    // Generate random seed
-    val randomSeed: Long = rand.nextLong()
-
     val smallSphereRadius: Float = 0.2f
     // delta t
     val dt: Float = 0.03f
@@ -227,52 +224,45 @@ object Hitables {
 
     override def next(): Hitable = {
 
-      // This is important generate same layout of hitable
-      val rand = new Random(randomSeed)
-
-      // TODO: Make it declarative
-
-      var hittables: List[Hitable] = Nil
-
-      hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
-        center   = Vec3(0f, -1000f, 0f),
-        radius   = 1000f,
-        material = LambertMaterial(albedo = Color3(0.5f, 0.5f, 0.5f))
-      )
-
       // Sphere hitables
       val sphereHitables: List[Hitable] =
         for(movingSphere <- movingSpheres) yield {
           movingSphere.hitableGenerator(movingSphere.y)
         }
 
-      hittables = hittables ++ sphereHitables
-
-      hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
-        center   = Vec3(0f, 1f, 0f),
-        radius   = 1.0f,
-        material = DielectricMaterial(
-          refIdx = 1.5f
+      var hittables: List[Hitable] =
+        List(
+          SphereHitable(
+            center   = Vec3(0f, -1000f, 0f),
+            radius   = 1000f,
+            material = LambertMaterial(albedo = Color3(0.5f, 0.5f, 0.5f))
+          ),
+          ListHitable(sphereHitables: _*),
+          SphereHitable(
+            center   = Vec3(0f, 1f, 0f),
+            radius   = 1.0f,
+            material = DielectricMaterial(
+              refIdx = 1.5f
+            )
+          ),
+          SphereHitable(
+            center   = Vec3(-4f, 1f, 0f),
+            radius   =  1.0f,
+            material = LambertMaterial(
+              albedo = Color3(0.4f, 0.2f, 0.1f)
+            )
+          ),
+          SphereHitable(
+            center   = Vec3(4f, 1f, 0f),
+            radius   = 1.0f,
+            material = MetalMaterial(
+              albedo = Color3(0.7f, 0.6f, 0.5f),
+              f      = 0.0f
+            )
+          )
         )
-      )
-      hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
-        center   = Vec3(-4f, 1f, 0f),
-        radius   =  1.0f,
-        material = LambertMaterial(
-          albedo = Color3(0.4f, 0.2f, 0.1f)
-        )
-      )
-      hittables = hittables :+ SphereHitable( // TODO: (:+) performance problem
-        center   = Vec3(4f, 1f, 0f),
-        radius   = 1.0f,
-        material = MetalMaterial(
-          albedo = Color3(0.7f, 0.6f, 0.5f),
-          f      = 0.0f
-        )
-      )
 
       val hitable = ListHitable(hittables: _*)
-
 
       // ==== Start: Physical updates ====
       t += dt
