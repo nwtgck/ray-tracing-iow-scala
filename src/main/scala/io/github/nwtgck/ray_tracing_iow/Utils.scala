@@ -134,7 +134,11 @@ object Utils {
 
     for((hitable, idx) <- hitables.zipWithIndex){
       val filePath: String = f"${dirPath}${File.separator}anime$idx%08d.${options.outImgExtension.name}"
-      renderToOutputStream(options, hitableGenerator = (_: Random) => hitable, outputStream=new FileOutputStream(filePath))
+      val outputStream = new FileOutputStream(filePath)
+      // Render to the file
+      renderToOutputStream(options, hitableGenerator = (_: Random) => hitable, outputStream=outputStream)
+      // Close the output stream
+      outputStream.close()
     }
   }
 
