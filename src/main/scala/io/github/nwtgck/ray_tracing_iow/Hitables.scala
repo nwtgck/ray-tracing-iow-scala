@@ -107,25 +107,12 @@ object Hitables {
 
     val smallSphereRadius: Float = 0.2f
     // delta t
-    val dt: Float = 0.03f
+    val dt: Float = 0.01f
     // Gravitational acceleration
     val g: Float = 9.80665f
 
-    // Weight of small sphere
-    // TODO: Remove
-    val m : Float = 100.0f
-    // Coefficient of restitution
-    // TODO: Remove
-    val k: Float = 0.6f
-
     // Passed time
     var t: Float = 0.0f
-    // Velocity
-    // TODO: Remove
-    var v: Float = 8.0f
-    // Initial y coordinate of small sphere
-    // TODO: Remove
-    var y : Float = smallSphereRadius
 
     // (NOTE: This has mutable elements)
     val movingSpheres: List[MovingHitable[Float /* y coord of center */, SphereHitable]] = {
@@ -151,7 +138,7 @@ object Hitables {
             )
           }.find(centers => centers.forall(c => (c - Vec3(4f, 0.2f, 0f)).length > 0.9f))
             .get             // NOTE: `get` is logically safe
-            .head.copy(y=y)  // NOTE: `head` is logically safe because of the range
+            .head            // NOTE: `head` is logically safe
           (x, z)
         }
         val (x, z) = makeXZ()
@@ -165,10 +152,10 @@ object Hitables {
             )
           )
           movingHitables = movingHitables :+ MovingHitable( // TODO: (:+) performance problem
-            m = m,
-            k = k,
-            v = v,
-            y = y,
+            m = 100,
+            k = 0.6f,
+            v = 10.0f + (4.0f * rand.nextFloat() - 2.0f),
+            y = smallSphereRadius,
             hitableGenerator = (y: Float) =>
               SphereHitable(
                 center   = Vec3(x, y, z),
@@ -186,10 +173,10 @@ object Hitables {
             f      = 0.5f * rand.nextFloat()
           )
           movingHitables = movingHitables :+ MovingHitable( // TODO: (:+) performance problem
-            m = m,
-            k = k,
-            v = v,
-            y = y,
+            m = 200,
+            k = 0.5f,
+            v = 10.0f + (4.0f * rand.nextFloat() - 2.0f),
+            y = smallSphereRadius,
             hitableGenerator = (y: Float) =>
               SphereHitable(
                 center   = Vec3(x, y, z),
@@ -200,10 +187,10 @@ object Hitables {
         } else {
           val material = DielectricMaterial(refIdx = 1.5f)
           movingHitables = movingHitables :+ MovingHitable( // TODO: (:+) performance problem
-            m = m,
-            k = k,
-            v = v,
-            y = y,
+            m = 300,
+            k = 0.5f,
+            v = 10.0f + (4.0f * rand.nextFloat() - 2.0f),
+            y = smallSphereRadius,
             hitableGenerator = (y: Float) =>
               SphereHitable(
                 center   = Vec3(x, y, z),

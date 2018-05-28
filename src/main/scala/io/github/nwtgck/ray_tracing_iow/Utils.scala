@@ -138,4 +138,13 @@ object Utils {
     }
   }
 
+  def skipAnimeGenerator(skipStep: Int, animeGenerator: Random => Seq[Hitable]): Random => Seq[Hitable] = {
+    (rand: Random) => {
+      for{
+        (h, idx) <- animeGenerator(rand).zipWithIndex
+        if idx % skipStep == 0
+      } yield h
+    }
+  }
+
 }

@@ -38,7 +38,7 @@ object Main {
         nSamples       = 10,
         outfilePathOpt = None,
         mode           = ImageMode,
-        animeTMax      = 4.2f,
+        animeTMax      = 6.0f,
         animeOutDirPath = "anime_out",
         outImgExtension = PPMImgExtension
       )
@@ -112,7 +112,13 @@ object Main {
             outputStream.close()
           case AnimeMode =>
             // Save images to directory
-            Utils.renderAmimeToDir(options, Hitables.defaultAnimationGenerator(maxT = options.animeTMax))
+            Utils.renderAmimeToDir(
+              options,
+              Utils.skipAnimeGenerator(
+                skipStep       = 5, // TODO: Hard code
+                animeGenerator = Hitables.defaultAnimationGenerator(maxT = options.animeTMax)
+              )
+            )
         }
 
       case None =>
