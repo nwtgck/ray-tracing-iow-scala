@@ -122,18 +122,18 @@ object Hitables {
       var movingHitables: List[MovingHitable[Float, SphereHitable]] = Nil
 
       for{
-        a <- -18 until 18
-        b <- -18 until 18
+        a <- -20f to 20f by 1.1f
+        b <- -20f to 20f by 1.1f
       }{
-        val chooseMat: Float = rand.nextFloat()
-
         def makeXZ(): (Float, Float) = {
           val Vec3(x: Float, _, z: Float) = Stream.continually {
+            val r1 = 0.9f * rand.nextFloat()
+            val r2 = 0.9f * rand.nextFloat()
             (smallSphereRadius to 4.0f by 0.1f).map((y: Float) =>
               Vec3(
-                a + 0.9f * rand.nextFloat(),
+                a + r1,
                 y,
-                b + 0.9f * rand.nextFloat()
+                b + r2
               )
             )
           }.find(centers => centers.forall(c => (c - Vec3(4f, 0.2f, 0f)).length > 0.9f))
@@ -143,12 +143,14 @@ object Hitables {
         }
         val (x, z) = makeXZ()
 
-        if(chooseMat < 0.6f){ // diffuse
+        val chooseMat: Float = rand.nextFloat()
+
+        if(chooseMat < 0.45f){ // diffuse
           val material = LambertMaterial(
             albedo = Color3(
-              rand.nextFloat() * rand.nextFloat(),
-              rand.nextFloat() * rand.nextFloat(),
-              rand.nextFloat() * rand.nextFloat()
+              rand.nextFloat(),
+              rand.nextFloat(),
+              rand.nextFloat()
             )
           )
           movingHitables = movingHitables :+ MovingHitable( // TODO: (:+) performance problem
@@ -159,7 +161,7 @@ object Hitables {
             hitableGenerator = (y: Float) =>
               SphereHitable(
                 center   = Vec3(x, y, z),
-                radius   =  0.2f,
+                radius   =  smallSphereRadius,
                 material = material
               )
           )
@@ -180,7 +182,7 @@ object Hitables {
             hitableGenerator = (y: Float) =>
               SphereHitable(
                 center   = Vec3(x, y, z),
-                radius   = 0.2f,
+                radius   = smallSphereRadius,
                 material = material
               )
           )
@@ -194,7 +196,7 @@ object Hitables {
             hitableGenerator = (y: Float) =>
               SphereHitable(
                 center   = Vec3(x, y, z),
-                radius   = 0.2f,
+                radius   = smallSphereRadius,
                 material = material
               )
           )
