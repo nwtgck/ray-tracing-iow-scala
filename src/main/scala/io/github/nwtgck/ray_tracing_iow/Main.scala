@@ -8,13 +8,25 @@ case class RayTracingIOWOptions(width: Int,
                                 minFloat: Float,
                                 randomSeed: Int,
                                 outfilePathOpt: Option[String],
-                                outImgExtension: ImgExtension)
+                                mode: Mode,
+                                animeSkipStep: Int,
+                                animeDt: Float,
+                                animeTMin: Float,
+                                animeTMax: Float,
+                                animeOutDirPath: String,
+                                imgFormat: ImgFormat)
 
-sealed class ImgExtension(val name: String)
-case object PPMImgExtension extends ImgExtension("ppm")
-case object PNGImgExtension extends ImgExtension("png")
-case object JPGImgExtension extends ImgExtension("jpg")
-case object GifImgExtension extends ImgExtension("gif")
+sealed abstract class ImgFormat(val code: String, val extName: String)
+case object TextPpmImgFormat   extends ImgFormat(code = "text-ppm", extName = "ppm")
+case object BinaryPpmImgFormat extends ImgFormat(code = "binary-ppm", extName = "ppm")
+case object PngImgFormat       extends ImgFormat(code = "png", extName = "png")
+case object JpgImgFormat       extends ImgFormat(code = "jpg", extName = "jpg")
+case object GifImgFormat       extends ImgFormat(code = "gif", extName = "gif")
+
+
+sealed abstract class Mode(override val toString: String)
+case object ImageMode extends Mode("image")
+case object AnimeMode extends Mode("anime")
 
 object Main {
 
@@ -22,13 +34,19 @@ object Main {
 
     val defaultOpts: RayTracingIOWOptions =
       RayTracingIOWOptions(
-        width          = 600,
-        height         = 400,
-        minFloat       = 0.001f,
-        randomSeed     = 101,
-        nSamples       = 10,
-        outfilePathOpt = None,
-        outImgExtension = PPMImgExtension
+        width           = 600,
+        height          = 400,
+        minFloat        = 0.001f,
+        randomSeed      = 101,
+        nSamples        = 10,
+        outfilePathOpt  = None,
+        mode            = ImageMode,
+        animeSkipStep   = 3,
+        animeDt         = 0.01f,
+        animeTMin       = 0.0f,
+        animeTMax       = 6.0f,
+        animeOutDirPath = "anime_out",
+        imgFormat       = TextPpmImgFormat
       )
 
     val parser = new scopt.OptionParser[RayTracingIOWOptions]("Ray Tracing in One Weekend Written in Scala") {
@@ -52,16 +70,48 @@ object Main {
         opts.copy(randomSeed = v)
       } text s"random-seed (default: ${defaultOpts.randomSeed})"
 
-      opt[String]("out-extension") action { (v, opts) =>
+      opt[String]("mode") action { (v, opts) =>
+        val mode = v match {
+          case ImageMode.toString =>
+            ImageMode
+          case AnimeMode.toString =>
+            AnimeMode
+        }
+        opts.copy(mode = mode)
+      } text s"mode - ${ImageMode} or ${AnimeMode} (default: ${defaultOpts.mode})"
+
+      opt[Int]("anime-skip-step") action { (v, opts) =>
+        opts.copy(animeSkipStep = v)
+      } text s"anime-skip-step (default: ${defaultOpts.animeSkipStep})"
+
+      opt[Double]("anime-dt") action { (v, opts) =>
+        opts.copy(animeDt = v.toFloat)
+      } text s"delta t (default: ${defaultOpts.animeDt})"
+
+      opt[Double]("anime-t-min") action { (v, opts) =>
+        opts.copy(animeTMin = v.toFloat)
+      } text s"anime-t-min (default: ${defaultOpts.animeTMin})"
+
+      opt[Double]("anime-t-max") action { (v, opts) =>
+        opts.copy(animeTMax = v.toFloat)
+      } text s"anime-t-max (default: ${defaultOpts.animeTMax})"
+
+      opt[String]("anime-out-dir-path") action { (v, opts) =>
+        opts.copy(animeOutDirPath = v)
+      } text s"directory path of output anime images (default: ${defaultOpts.animeOutDirPath})"
+
+      opt[String]("img-format") action { (v, opts) =>
         opts.copy(
-          outImgExtension = v match {
-            case PPMImgExtension.name => PPMImgExtension
-            case PNGImgExtension.name => PNGImgExtension
-            case JPGImgExtension.name => JPGImgExtension
-            case GifImgExtension.name => GifImgExtension
+          imgFormat = v match {
+            case TextPpmImgFormat.code   => TextPpmImgFormat
+            case BinaryPpmImgFormat.code => BinaryPpmImgFormat
+            case PngImgFormat.code       => PngImgFormat
+            case JpgImgFormat.code       => JpgImgFormat
+            case GifImgFormat.code       => GifImgFormat
           }
         )
-      } text s"extension of output file (default: ${defaultOpts.outImgExtension.name})"
+      } text s"output image format (default: ${defaultOpts.imgFormat.code})"
+
 
       opt[String]("out-file") action { (v, opts) =>
         opts.copy(outfilePathOpt = Some(v))
@@ -70,16 +120,31 @@ object Main {
 
     parser.parse(args, defaultOpts) match {
       case Some(options) =>
-        // output
-        val outputStream: OutputStream =
-          options.outfilePathOpt.map{path => new PrintStream(new FileOutputStream(path))}
-            .getOrElse(System.out)
+        options.mode match {
+          case ImageMode =>
+            // output
+            val outputStream: OutputStream =
+              options.outfilePathOpt.map{path => new PrintStream(new FileOutputStream(path))}
+                .getOrElse(System.out)
+            // Render ray-tracing image to the output stream
+            Utils.renderToOutputStream(options, Hitables.defaultHitableGenerator, outputStream)
+            // Close the output stream
+            outputStream.close()
+          case AnimeMode =>
+            // Save images to directory
+            Utils.renderAmimeToDir(
+              options,
+              Utils.skipAnimeGenerator(
+                skipStep       = options.animeSkipStep,
+                animeGenerator = Hitables.defaultAnimationGenerator(
+                  dt   = options.animeDt,
+                  minT = options.animeTMin,
+                  maxT = options.animeTMax
+                )
+              )
+            )
+        }
 
-        // Render ray-tracing image to the output stream
-        Utils.renderToOutputStream(options, Hitables.defaultHitableGenerator, outputStream)
-
-        // Close the output stream
-        outputStream.close()
       case None =>
         ()
     }

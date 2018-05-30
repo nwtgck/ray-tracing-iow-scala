@@ -1,7 +1,7 @@
 package io.github.nwtgck.ray_tracing_iow
 
 import java.awt.image.BufferedImage
-import java.io.{OutputStream, PrintStream}
+import java.io._
 
 import javax.imageio.ImageIO
 
@@ -46,7 +46,7 @@ object Utils {
     val height : Int = options.height
     val minFloat : Float = options.minFloat
     val ns     : Int = options.nSamples
-    val imgExt: ImgExtension = options.outImgExtension
+    val imgFormat: ImgFormat = options.imgFormat
 
     val rand: Random = new Random(options.randomSeed)
 
@@ -98,8 +98,8 @@ object Utils {
       (col, (i, j))
     }
 
-    imgExt match {
-      case PPMImgExtension =>
+    imgFormat match {
+      case TextPpmImgFormat =>
         val out = new PrintStream(outputStream)
         out.println(
           s"""P3
@@ -109,12 +109,55 @@ object Utils {
         for((col, pos) <- colorAndPosPar.toStream){ // NOTE: toStream is necessary to be sure that colors are ordered
           out.println(s"${col.ir} ${col.ig} ${col.ib}")
         }
+      case BinaryPpmImgFormat =>
+        outputStream.write(s"""P6
+                              |${width} ${height}
+                              |255
+                              |""".stripMargin.getBytes)
+        for((col, _) <- colorAndPosPar.toStream){ // NOTE: toStream is necessary to be sure that colors are ordered
+          outputStream.write(col.ir.toByte)
+          outputStream.write(col.ig.toByte)
+          outputStream.write(col.ib.toByte)
+        }
       case _ =>
         val image: BufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
         for((col, (x, y)) <- colorAndPosPar){
           image.setRGB(x, height -1 - y, col.rgbInt)
         }
-        ImageIO.write(image, imgExt.name, outputStream)
+        ImageIO.write(image, imgFormat.extName, outputStream)
+    }
+  }
+
+
+  def renderAmimeToDir(options: RayTracingIOWOptions, animeGenerator: Random => Seq[Hitable]): Unit = {
+
+    val dirPath = options.animeOutDirPath
+
+    if(!new File(dirPath).exists()){
+      new File(dirPath).mkdirs()
+    }
+
+    val rand: Random = new Random(options.randomSeed)
+
+    val hitables: Seq[Hitable] = animeGenerator(rand)
+
+
+    for((hitable, idx) <- hitables.zipWithIndex.par){
+      val filePath: String = f"${dirPath}${File.separator}anime$idx%08d.${options.imgFormat.extName}"
+      val outputStream = new BufferedOutputStream(new FileOutputStream(filePath))
+      // Render to the file
+      renderToOutputStream(options, hitableGenerator = (_: Random) => hitable, outputStream=outputStream)
+      // Close the output stream
+      outputStream.close()
+    }
+  }
+
+  def skipAnimeGenerator(skipStep: Int, animeGenerator: Random => Seq[Hitable]): Random => Seq[Hitable] = {
+    (rand: Random) => {
+      for{
+        (h, idx) <- animeGenerator(rand).zipWithIndex
+        if idx % skipStep == 0
+      } yield h
     }
   }
 

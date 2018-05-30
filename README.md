@@ -3,8 +3,7 @@
 
 [Ray Tracing in One Weekend](http://in1weekend.blogspot.jp/2016/01/ray-tracing-in-one-weekend.html) Written in Scala
 
-
-<img src='image_logs/pngs/chapter12.png' width='500duy '>
+![Animation](demo_images/anime1.gif)
 
 ## Run
 
@@ -40,9 +39,18 @@ Usage: Ray Tracing in One Weekend Written in Scala [options]
 
   --width <value>          width (default: 600)
   --height <value>         height (default: 400)
+  --min-float <value>      min-float (default: 0.001)
   --n-samples <value>      n-samples (default: 10)
   --random-seed <value>    random-seed (default: 101)
-  --out-extension <value>  extension of output file (default: ppm)
+  --mode <value>           mode - image or anime (default: image)
+  --anime-skip-step <value>
+                           anime-skip-step (default: 3)
+  --anime-dt <value>       delta t (default: 0.01)
+  --anime-t-min <value>    anime-t-min (default: 0.0)
+  --anime-t-max <value>    anime-t-max (default: 6.0)
+  --anime-out-dir-path <value>
+                           directory path of output anime images (default: anime_out)
+  --img-format <value>     output image format (default: text-ppm)
   --out-file <value>       path of output file (default: stdout)
 ```
 

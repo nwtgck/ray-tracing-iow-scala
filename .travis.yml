@@ -24,3 +24,6 @@ script:
   - diff out1.ppm out2.ppm
   - file out1.ppm
   - wc out1.ppm
+  # NOTE: This is just a working-test of Animation
+  - sbt "run --width=150 --height=100 --n-samples=3 --anime-t-max=0.5 --mode anime"
+  - ls anime_out
