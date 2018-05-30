@@ -129,6 +129,9 @@ object SceneGenerators {
     // Passed time
     var t: Float = 0.0f
 
+    // Angle of camera-look-from
+    var lookFromTheta: Float = 2*Math.PI.toFloat
+
     // (NOTE: This has mutable elements)
     val movingSpheres: List[MovingHitable[Float /* y coord of center */, SphereHitable]] = {
 
@@ -137,8 +140,9 @@ object SceneGenerators {
       var movingHitables: List[MovingHitable[Float, SphereHitable]] = Nil
 
       for{
-        a <- -20f to 20f by 1.1f
-        b <- -20f to 20f by 1.1f
+        a <- -20f to 20f by 1.2f
+        b <- -20f to 20f by 1.2f
+        if Seq(Vec3(4f, 1f, 0f), Vec3(-4f, 1f, 0f), Vec3(0f, 1f, 0f)).forall(v => (Vec3(a, 1.0f, b) - v).length > 1.0f + smallSphereRadius)
       }{
         def makeXZ(): (Float, Float) = {
           val Vec3(x: Float, _, z: Float) = Stream.continually {
@@ -151,7 +155,9 @@ object SceneGenerators {
                 b + r2
               )
             )
-          }.find(centers => centers.forall(c => (c - Vec3(4f, 0.2f, 0f)).length > 0.9f))
+          }.find(centers => centers.forall(c =>
+            Seq(Vec3(4f, 1f, 0f), Vec3(-4f, 1f, 0f), Vec3(0f, 1f, 0f)).forall(v => (c - v).length > 1.0f + smallSphereRadius)
+          ))
             .get             // NOTE: `get` is logically safe
             .head            // NOTE: `head` is logically safe
           (x, z)
@@ -163,9 +169,9 @@ object SceneGenerators {
         if(chooseMat < 0.45f){ // diffuse
           val material = LambertMaterial(
             albedo = Color3(
-              rand.nextFloat(),
-              rand.nextFloat(),
-              rand.nextFloat()
+              rand.nextFloat() * rand.nextFloat(),
+              rand.nextFloat() * rand.nextFloat(),
+              rand.nextFloat() * rand.nextFloat()
             )
           )
           movingHitables = movingHitables :+ MovingHitable( // TODO: (:+) performance problem
@@ -220,6 +226,15 @@ object SceneGenerators {
       movingHitables
     }
 
+    private def update(): Unit = {
+      cameraUpdate()
+      physicalUpdate()
+    }
+
+    private def cameraUpdate(): Unit = {
+      lookFromTheta += -(2*Math.PI / 1200).toFloat
+    }
+
     // (DESTRUCTIVE: movingSpheres)
     private def physicalUpdate(): Unit = {
       t += dt
@@ -244,7 +259,7 @@ object SceneGenerators {
     override def next(): Scene = {
 
       if(t < minT){
-        physicalUpdate()
+        update()
         return next()
       }
 
@@ -286,11 +301,16 @@ object SceneGenerators {
           )
         )
 
-      physicalUpdate()
+      update()
 
       Scene(
         camera = {
-          val lookfrom: Vec3 = Vec3(13f, 2f, 3f)
+          val r: Float = Math.sqrt(200).toFloat
+          val lookfrom: Vec3 = Vec3(
+            r * Math.cos(lookFromTheta).toFloat,
+            2f,
+            r * Math.sin(lookFromTheta).toFloat
+          )
           val lookat: Vec3 = Vec3(0f, 0f, 0f)
           val focusDist: Float = 10.0f
           val aperture: Float = 0.1f

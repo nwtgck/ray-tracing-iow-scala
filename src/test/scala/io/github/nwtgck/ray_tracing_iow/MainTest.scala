@@ -22,7 +22,7 @@ class MainTest extends FunSuite with Matchers{
         animeSkipStep   = 3,
         animeDt         = 0.01f,
         animeTMin       = 0.0f,
-        animeTMax       = 4.2f,
+        animeTMax       = 6f,
         animeOutDirPath = "anime_out",
         imgFormat       = TextPpmImgFormat
       ),
