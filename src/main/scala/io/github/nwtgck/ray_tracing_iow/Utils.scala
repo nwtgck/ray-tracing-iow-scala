@@ -132,7 +132,7 @@ object Utils {
     val hitables: Seq[Hitable] = animeGenerator(rand)
 
 
-    for((hitable, idx) <- hitables.zipWithIndex){
+    for((hitable, idx) <- hitables.zipWithIndex.par){
       val filePath: String = f"${dirPath}${File.separator}anime$idx%08d.${options.outImgExtension.name}"
       val outputStream = new FileOutputStream(filePath)
       // Render to the file
