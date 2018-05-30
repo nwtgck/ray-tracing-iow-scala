@@ -1,7 +1,7 @@
 package io.github.nwtgck.ray_tracing_iow
 
 import java.awt.image.BufferedImage
-import java.io.{File, FileOutputStream, OutputStream, PrintStream}
+import java.io._
 
 import javax.imageio.ImageIO
 
@@ -144,7 +144,7 @@ object Utils {
 
     for((hitable, idx) <- hitables.zipWithIndex.par){
       val filePath: String = f"${dirPath}${File.separator}anime$idx%08d.${options.imgFormat.extName}"
-      val outputStream = new FileOutputStream(filePath)
+      val outputStream = new BufferedOutputStream(new FileOutputStream(filePath))
       // Render to the file
       renderToOutputStream(options, hitableGenerator = (_: Random) => hitable, outputStream=outputStream)
       // Close the output stream
