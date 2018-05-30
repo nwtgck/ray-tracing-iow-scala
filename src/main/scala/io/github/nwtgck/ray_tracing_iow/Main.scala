@@ -2,8 +2,6 @@ package io.github.nwtgck.ray_tracing_iow
 
 import java.io.{FileOutputStream, OutputStream, PrintStream}
 
-import scala.util.Random
-
 case class RayTracingIOWOptions(width: Int,
                                 height: Int,
                                 nSamples: Int,
@@ -14,13 +12,14 @@ case class RayTracingIOWOptions(width: Int,
                                 animeSkipStep: Int,
                                 animeTMax: Float,
                                 animeOutDirPath: String,
-                                outImgExtension: ImgExtension)
+                                imgFormat: ImgFormat)
 
-sealed abstract class ImgExtension(val name: String)
-case object PPMImgExtension extends ImgExtension("ppm")
-case object PNGImgExtension extends ImgExtension("png")
-case object JPGImgExtension extends ImgExtension("jpg")
-case object GifImgExtension extends ImgExtension("gif")
+sealed abstract class ImgFormat(val code: String, val extName: String)
+case object TextPpmImgFormat   extends ImgFormat(code = "text-ppm", extName = "ppm")
+case object PngImgFormat       extends ImgFormat(code = "png", extName = "png")
+case object JpgImgFormat       extends ImgFormat(code = "jpg", extName = "jpg")
+case object GifImgFormat       extends ImgFormat(code = "gif", extName = "gif")
+
 
 sealed abstract class Mode(override val toString: String)
 case object ImageMode extends Mode("image")
@@ -32,17 +31,17 @@ object Main {
 
     val defaultOpts: RayTracingIOWOptions =
       RayTracingIOWOptions(
-        width          = 600,
-        height         = 400,
-        minFloat       = 0.001f,
-        randomSeed     = 101,
-        nSamples       = 10,
-        outfilePathOpt = None,
-        mode           = ImageMode,
-        animeSkipStep  = 3,
-        animeTMax      = 6.0f,
+        width           = 600,
+        height          = 400,
+        minFloat        = 0.001f,
+        randomSeed      = 101,
+        nSamples        = 10,
+        outfilePathOpt  = None,
+        mode            = ImageMode,
+        animeSkipStep   = 3,
+        animeTMax       = 6.0f,
         animeOutDirPath = "anime_out",
-        outImgExtension = PPMImgExtension
+        imgFormat       = TextPpmImgFormat
       )
 
     val parser = new scopt.OptionParser[RayTracingIOWOptions]("Ray Tracing in One Weekend Written in Scala") {
@@ -88,16 +87,17 @@ object Main {
         opts.copy(animeOutDirPath = v)
       } text s"directory path of output anime images (default: ${defaultOpts.animeOutDirPath})"
 
-      opt[String]("out-extension") action { (v, opts) =>
+      opt[String]("img-format") action { (v, opts) =>
         opts.copy(
-          outImgExtension = v match {
-            case PPMImgExtension.name => PPMImgExtension
-            case PNGImgExtension.name => PNGImgExtension
-            case JPGImgExtension.name => JPGImgExtension
-            case GifImgExtension.name => GifImgExtension
+          imgFormat = v match {
+            case TextPpmImgFormat.code   => TextPpmImgFormat
+            case PngImgFormat.code       => PngImgFormat
+            case JpgImgFormat.code       => JpgImgFormat
+            case GifImgFormat.code       => GifImgFormat
           }
         )
-      } text s"extension of output file (default: ${defaultOpts.outImgExtension.name})"
+      } text s"output image format (default: ${defaultOpts.imgFormat.code})"
+
 
       opt[String]("out-file") action { (v, opts) =>
         opts.copy(outfilePathOpt = Some(v))

@@ -46,7 +46,7 @@ object Utils {
     val height : Int = options.height
     val minFloat : Float = options.minFloat
     val ns     : Int = options.nSamples
-    val imgExt: ImgExtension = options.outImgExtension
+    val imgFormat: ImgFormat = options.imgFormat
 
     val rand: Random = new Random(options.randomSeed)
 
@@ -98,8 +98,8 @@ object Utils {
       (col, (i, j))
     }
 
-    imgExt match {
-      case PPMImgExtension =>
+    imgFormat match {
+      case TextPpmImgFormat =>
         val out = new PrintStream(outputStream)
         out.println(
           s"""P3
@@ -114,7 +114,7 @@ object Utils {
         for((col, (x, y)) <- colorAndPosPar){
           image.setRGB(x, height -1 - y, col.rgbInt)
         }
-        ImageIO.write(image, imgExt.name, outputStream)
+        ImageIO.write(image, imgFormat.extName, outputStream)
     }
   }
 
@@ -133,7 +133,7 @@ object Utils {
 
 
     for((hitable, idx) <- hitables.zipWithIndex.par){
-      val filePath: String = f"${dirPath}${File.separator}anime$idx%08d.${options.outImgExtension.name}"
+      val filePath: String = f"${dirPath}${File.separator}anime$idx%08d.${options.imgFormat.extName}"
       val outputStream = new FileOutputStream(filePath)
       // Render to the file
       renderToOutputStream(options, hitableGenerator = (_: Random) => hitable, outputStream=outputStream)

@@ -10,17 +10,17 @@ class MainTest extends FunSuite with Matchers{
     val byteOutputStream = new ByteArrayOutputStream()
     Utils.renderToOutputStream(
       RayTracingIOWOptions(
-        width          = 150,
-        height         = 100,
-        minFloat       = 0.001f,
-        nSamples       = 10,
-        randomSeed     = 101,
-        outfilePathOpt = None,
-        mode           = ImageMode,
-        animeSkipStep  = 3,
-        animeTMax      = 4.2f,
+        width           = 150,
+        height          = 100,
+        minFloat        = 0.001f,
+        nSamples        = 10,
+        randomSeed      = 101,
+        outfilePathOpt  = None,
+        mode            = ImageMode,
+        animeSkipStep   = 3,
+        animeTMax       = 4.2f,
         animeOutDirPath = "anime_out",
-        outImgExtension = PPMImgExtension
+        imgFormat       = TextPpmImgFormat
       ),
       Hitables.defaultHitableGenerator,
       byteOutputStream
