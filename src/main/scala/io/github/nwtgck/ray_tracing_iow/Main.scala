@@ -10,6 +10,8 @@ case class RayTracingIOWOptions(width: Int,
                                 outfilePathOpt: Option[String],
                                 mode: Mode,
                                 animeSkipStep: Int,
+                                animeDt: Float,
+                                animeTMin: Float,
                                 animeTMax: Float,
                                 animeOutDirPath: String,
                                 imgFormat: ImgFormat)
@@ -40,6 +42,8 @@ object Main {
         outfilePathOpt  = None,
         mode            = ImageMode,
         animeSkipStep   = 3,
+        animeDt         = 0.01f,
+        animeTMin       = 0.0f,
         animeTMax       = 6.0f,
         animeOutDirPath = "anime_out",
         imgFormat       = TextPpmImgFormat
@@ -79,6 +83,14 @@ object Main {
       opt[Int]("anime-skip-step") action { (v, opts) =>
         opts.copy(animeSkipStep = v)
       } text s"anime-skip-step (default: ${defaultOpts.animeSkipStep})"
+
+      opt[Double]("anime-dt") action { (v, opts) =>
+        opts.copy(animeDt = v.toFloat)
+      } text s"delta t (default: ${defaultOpts.animeDt})"
+
+      opt[Double]("anime-t-min") action { (v, opts) =>
+        opts.copy(animeTMin = v.toFloat)
+      } text s"anime-t-min (default: ${defaultOpts.animeTMin})"
 
       opt[Double]("anime-t-max") action { (v, opts) =>
         opts.copy(animeTMax = v.toFloat)
@@ -124,7 +136,11 @@ object Main {
               options,
               Utils.skipAnimeGenerator(
                 skipStep       = options.animeSkipStep,
-                animeGenerator = Hitables.defaultAnimationGenerator(maxT = options.animeTMax)
+                animeGenerator = Hitables.defaultAnimationGenerator(
+                  dt   = options.animeDt,
+                  minT = options.animeTMin,
+                  maxT = options.animeTMax
+                )
               )
             )
         }

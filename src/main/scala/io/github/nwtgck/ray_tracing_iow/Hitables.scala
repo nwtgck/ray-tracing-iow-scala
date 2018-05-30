@@ -90,7 +90,7 @@ object Hitables {
     ListHitable(hittables: _*)
   }
 
-  def defaultAnimationGenerator(maxT: Float)(rand: Random): Seq[Hitable] = new Iterator[Hitable]{
+  def defaultAnimationGenerator(dt: Float, minT: Float, maxT: Float)(rand: Random): Seq[Hitable] = new Iterator[Hitable]{
 
     /**
       * Moving Hitable
@@ -106,8 +106,6 @@ object Hitables {
     case class MovingHitable[P, H <: Hitable](m: Float, k: Float, var v: Float, var y: Float, hitableGenerator: P => H)
 
     val smallSphereRadius: Float = 0.2f
-    // delta t
-    val dt: Float = 0.01f
     // Gravitational acceleration
     val g: Float = 9.80665f
 
@@ -205,6 +203,21 @@ object Hitables {
       movingHitables
     }
 
+    // (DESTRUCTIVE: movingSpheres)
+    private def physicalUpdate(): Unit = {
+      t += dt
+      for(movingSphere <- movingSpheres){
+        val f = -movingSphere.m * g
+        if(movingSphere.v < 0 && movingSphere.y < smallSphereRadius){
+          movingSphere.v = -movingSphere.k * movingSphere.v
+        } else {
+          val a = f / movingSphere.m
+          movingSphere.v += a * dt
+        }
+        movingSphere.y += movingSphere.v * dt
+      }
+    }
+
 
     override def hasNext(): Boolean = {
       println(s"t: ${t}")
@@ -212,6 +225,11 @@ object Hitables {
     }
 
     override def next(): Hitable = {
+
+      if(t < minT){
+        physicalUpdate()
+        return next()
+      }
 
       // Sphere hitables
       val sphereHitables: List[Hitable] =
@@ -253,21 +271,7 @@ object Hitables {
 
       val hitable = ListHitable(hittables: _*)
 
-      // ==== Start: Physical updates ====
-      t += dt
-
-      // (DESTRUCTIVE: movingSpheres)
-      for(movingSphere <- movingSpheres){
-        val f = -movingSphere.m * g
-        if(movingSphere.v < 0 && movingSphere.y < smallSphereRadius){
-          movingSphere.v = -movingSphere.k * movingSphere.v
-        } else {
-          val a = f / movingSphere.m
-          movingSphere.v += a * dt
-        }
-        movingSphere.y += movingSphere.v * dt
-      }
-      // ==== End: Physical updates ====
+      physicalUpdate()
 
       hitable
     }
