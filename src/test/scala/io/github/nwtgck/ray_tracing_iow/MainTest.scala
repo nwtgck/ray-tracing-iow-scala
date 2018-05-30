@@ -8,10 +8,12 @@ class MainTest extends FunSuite with Matchers{
 
   test("Main.renderToOutputStream test") {
     val byteOutputStream = new ByteArrayOutputStream()
+    val width: Int = 150
+    val height:Int = 100
     Utils.renderToOutputStream(
       RayTracingIOWOptions(
-        width           = 150,
-        height          = 100,
+        width           = width,
+        height          = height,
         minFloat        = 0.001f,
         nSamples        = 10,
         randomSeed      = 101,
@@ -24,7 +26,7 @@ class MainTest extends FunSuite with Matchers{
         animeOutDirPath = "anime_out",
         imgFormat       = TextPpmImgFormat
       ),
-      Hitables.defaultHitableGenerator,
+      SceneGenerators.defaultSceneGenerator(width, height),
       byteOutputStream
     )
     val actual: Array[Byte] = byteOutputStream.toByteArray

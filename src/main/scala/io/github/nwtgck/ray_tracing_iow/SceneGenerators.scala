@@ -2,12 +2,12 @@ package io.github.nwtgck.ray_tracing_iow
 
 import scala.util.Random
 
-object Hitables {
+object SceneGenerators {
 
   /**
     * Hittable of the book cover
     */
-  def defaultHitableGenerator(rand: Random): Hitable = {
+  def defaultSceneGenerator(width: Int, height: Int)(rand: Random): Scene = {
 
     // TODO: Make it declarative
 
@@ -87,10 +87,27 @@ object Hitables {
       )
     )
 
-    ListHitable(hittables: _*)
+    Scene(
+      camera = {
+        val lookfrom: Vec3 = Vec3(13f, 2f, 3f)
+        val lookat: Vec3 = Vec3(0f, 0f, 0f)
+        val focusDist: Float = 10.0f
+        val aperture: Float = 0.1f
+        Camera(
+          lookfrom = lookfrom,
+          lookat = lookat,
+          vup = Vec3(0f, 1f, 0f),
+          vfov = 20f,
+          aspect = width.toFloat / height,
+          aperture = aperture,
+          focusDist = focusDist
+        )
+      },
+      hitable = ListHitable(hittables: _*)
+    )
   }
 
-  def defaultAnimationGenerator(dt: Float, minT: Float, maxT: Float)(rand: Random): Seq[Hitable] = new Iterator[Hitable]{
+  def defaultAnimationGenerator(width: Int, height: Int, dt: Float, minT: Float, maxT: Float)(rand: Random): Seq[Scene] = new Iterator[Scene]{
 
     /**
       * Moving Hitable
@@ -224,7 +241,7 @@ object Hitables {
       t <= maxT
     }
 
-    override def next(): Hitable = {
+    override def next(): Scene = {
 
       if(t < minT){
         physicalUpdate()
@@ -269,11 +286,26 @@ object Hitables {
           )
         )
 
-      val hitable = ListHitable(hittables: _*)
-
       physicalUpdate()
 
-      hitable
+      Scene(
+        camera = {
+          val lookfrom: Vec3 = Vec3(13f, 2f, 3f)
+          val lookat: Vec3 = Vec3(0f, 0f, 0f)
+          val focusDist: Float = 10.0f
+          val aperture: Float = 0.1f
+          Camera(
+            lookfrom = lookfrom,
+            lookat = lookat,
+            vup = Vec3(0f, 1f, 0f),
+            vfov = 20f,
+            aspect = width.toFloat / height,
+            aperture = aperture,
+            focusDist = focusDist
+          )
+        },
+        hitable = ListHitable(hittables: _*)
+      )
     }
   }.toSeq
 }
