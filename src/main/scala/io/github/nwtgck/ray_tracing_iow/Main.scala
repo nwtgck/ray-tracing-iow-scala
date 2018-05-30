@@ -16,6 +16,7 @@ case class RayTracingIOWOptions(width: Int,
 
 sealed abstract class ImgFormat(val code: String, val extName: String)
 case object TextPpmImgFormat   extends ImgFormat(code = "text-ppm", extName = "ppm")
+case object BinaryPpmImgFormat extends ImgFormat(code = "binary-ppm", extName = "ppm")
 case object PngImgFormat       extends ImgFormat(code = "png", extName = "png")
 case object JpgImgFormat       extends ImgFormat(code = "jpg", extName = "jpg")
 case object GifImgFormat       extends ImgFormat(code = "gif", extName = "gif")
@@ -91,6 +92,7 @@ object Main {
         opts.copy(
           imgFormat = v match {
             case TextPpmImgFormat.code   => TextPpmImgFormat
+            case BinaryPpmImgFormat.code => BinaryPpmImgFormat
             case PngImgFormat.code       => PngImgFormat
             case JpgImgFormat.code       => JpgImgFormat
             case GifImgFormat.code       => GifImgFormat

@@ -109,6 +109,16 @@ object Utils {
         for((col, pos) <- colorAndPosPar.toStream){ // NOTE: toStream is necessary to be sure that colors are ordered
           out.println(s"${col.ir} ${col.ig} ${col.ib}")
         }
+      case BinaryPpmImgFormat =>
+        outputStream.write(s"""P6
+                              |${width} ${height}
+                              |255
+                              |""".stripMargin.getBytes)
+        for((col, _) <- colorAndPosPar.toStream){ // NOTE: toStream is necessary to be sure that colors are ordered
+          outputStream.write(col.ir.toByte)
+          outputStream.write(col.ig.toByte)
+          outputStream.write(col.ib.toByte)
+        }
       case _ =>
         val image: BufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
         for((col, (x, y)) <- colorAndPosPar){
