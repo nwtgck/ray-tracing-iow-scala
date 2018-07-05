@@ -3,7 +3,7 @@
 
 [Ray Tracing in One Weekend](http://in1weekend.blogspot.jp/2016/01/ray-tracing-in-one-weekend.html) Written in Scala
 
-![Animation](demo_images/anime1.gif)
+![Animation](demo_images/camera_move_anime.gif)
 
 ## Run
 
