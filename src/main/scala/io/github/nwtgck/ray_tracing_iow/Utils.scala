@@ -40,7 +40,7 @@ object Utils {
     }
   }
 
-  def renderToOutputStream(options: RayTracingIOWOptions, hitableGenerator: Random => Hitable, outputStream: OutputStream): Unit = {
+  def renderToOutputStream(options: RayTracingIOWOptions, sceneGenerator: Random => Scene, outputStream: OutputStream): Unit = {
 
     val width  : Int = options.width
     val height : Int = options.height
@@ -50,21 +50,9 @@ object Utils {
 
     val rand: Random = new Random(options.randomSeed)
 
-    val hitable        : Hitable = hitableGenerator(rand)
-
-    val lookfrom: Vec3 = Vec3(13f, 2f, 3f)
-    val lookat  : Vec3 = Vec3(0f, 0f, 0f)
-    val focusDist: Float = 10.0f
-    val aperture   : Float = 0.1f
-    val camera: Camera = Camera(
-      lookfrom  = lookfrom,
-      lookat    = lookat,
-      vup       = Vec3(0f, 1f, 0f),
-      vfov      = 20f,
-      aspect    = width.toFloat / height,
-      aperture  = aperture,
-      focusDist = focusDist
-    )
+    val scene: Scene = sceneGenerator(rand)
+    val hitable: Hitable = scene.hitable
+    val camera = scene.camera
 
     // Pairs of Position and Seed
     val posAndSeeds: Stream[((Int, Int), Int)] = for{
@@ -129,7 +117,7 @@ object Utils {
   }
 
 
-  def renderAmimeToDir(options: RayTracingIOWOptions, animeGenerator: Random => Seq[Hitable]): Unit = {
+  def renderAmimeToDir(options: RayTracingIOWOptions, animeGenerator: Random => Seq[Scene]): Unit = {
 
     val dirPath = options.animeOutDirPath
 
@@ -139,20 +127,20 @@ object Utils {
 
     val rand: Random = new Random(options.randomSeed)
 
-    val hitables: Seq[Hitable] = animeGenerator(rand)
+    val scenes: Seq[Scene] = animeGenerator(rand)
 
 
-    for((hitable, idx) <- hitables.zipWithIndex.par){
+    for((scene, idx) <- scenes.zipWithIndex.par){
       val filePath: String = f"${dirPath}${File.separator}anime$idx%08d.${options.imgFormat.extName}"
       val outputStream = new BufferedOutputStream(new FileOutputStream(filePath))
       // Render to the file
-      renderToOutputStream(options, hitableGenerator = (_: Random) => hitable, outputStream=outputStream)
+      renderToOutputStream(options, sceneGenerator = (_: Random) => scene, outputStream=outputStream)
       // Close the output stream
       outputStream.close()
     }
   }
 
-  def skipAnimeGenerator(skipStep: Int, animeGenerator: Random => Seq[Hitable]): Random => Seq[Hitable] = {
+  def skipAnimeGenerator(skipStep: Int, animeGenerator: Random => Seq[Scene]): Random => Seq[Scene] = {
     (rand: Random) => {
       for{
         (h, idx) <- animeGenerator(rand).zipWithIndex

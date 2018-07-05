@@ -41,8 +41,8 @@ object Main {
         nSamples        = 10,
         outfilePathOpt  = None,
         mode            = ImageMode,
-        animeSkipStep   = 3,
-        animeDt         = 0.01f,
+        animeSkipStep   = 6,
+        animeDt         = 0.005f,
         animeTMin       = 0.0f,
         animeTMax       = 6.0f,
         animeOutDirPath = "anime_out",
@@ -127,7 +127,14 @@ object Main {
               options.outfilePathOpt.map{path => new PrintStream(new FileOutputStream(path))}
                 .getOrElse(System.out)
             // Render ray-tracing image to the output stream
-            Utils.renderToOutputStream(options, Hitables.defaultHitableGenerator, outputStream)
+            Utils.renderToOutputStream(
+              options,
+              SceneGenerators.defaultSceneGenerator(
+                width = options.width,
+                height = options.height
+              ),
+              outputStream
+            )
             // Close the output stream
             outputStream.close()
           case AnimeMode =>
@@ -136,10 +143,12 @@ object Main {
               options,
               Utils.skipAnimeGenerator(
                 skipStep       = options.animeSkipStep,
-                animeGenerator = Hitables.defaultAnimationGenerator(
-                  dt   = options.animeDt,
-                  minT = options.animeTMin,
-                  maxT = options.animeTMax
+                animeGenerator = SceneGenerators.defaultAnimationGenerator(
+                  width  = options.width,
+                  height = options.height,
+                  dt     = options.animeDt,
+                  minT   = options.animeTMin,
+                  maxT   = options.animeTMax
                 )
               )
             )
